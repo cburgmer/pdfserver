@@ -26,12 +26,16 @@ def main(request):
     except ObjectDoesNotExist:
         files = []
 
-    return render_to_response('main.html',
-                              {
-                               'uploads': files,
-                               'form': UploadForm(),
-                              },
-                              context_instance=RequestContext(request))
+    response = render_to_response('main.html',
+                                {
+                                 'uploads': files,
+                                 'form': UploadForm(),
+                                },
+                                context_instance=RequestContext(request))
+    if files:
+        response['Cache-Control'] = 'no-cache'
+        # TODO response['Expires'] = 
+    return response
 
 def upload_file(request):
     if request.method == 'POST':
