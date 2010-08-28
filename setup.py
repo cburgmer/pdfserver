@@ -13,6 +13,7 @@ setup(
     url = "http://cburgmer.nfshost.com/pdfserver/",
     package_data = {'pdfserver': ['templates/*.html', 'locale/*/*.mo', 'locale/*/*.po',
                                   'media/css/*.css', 'media/css/images/*','media/js/*.js']},
+    install_requires=['pyPdf >= 1.12', 'Django >= 1.0'],
     classifiers = [
     	"Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
