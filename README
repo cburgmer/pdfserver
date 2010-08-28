@@ -25,24 +25,29 @@ Deploy
 ======
 Asside from installing Python, Django and pyPdf you need to deploy the
 appropriate files from JQuery and jQueryUI. Run the following to download
-and copy the files:
+and copy the files::
 
     $ cd pdfserver
     $ make deploy
 
 To start a project around pdfserver run the following steps:
 
-1. Create a new project
+1. Create a new project::
+
     $ django-admin startproject myserver
   
 2. Edit settings to fit pdfserver's needs (``myserver/settings.py``) following
-   the example in pdfserver/example_settings.py
+   the example in ``example_settings.py``.
 
-3. Create the database
+3. Create the database::
+
     $ python manage.py syncdb
 
-4. When not in debug mode make sure to serve static files under ``media/js/*``
-    and ``media/css/*``.
+4. Make sure the given upload directory is writable and not accessible from 
+   outside.
+
+5. When not in debug mode make sure to serve static files under ``media/js/*``
+   and ``media/css/*``.
 
 Contact
 =======

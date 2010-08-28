@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-28 16:34+0200\n"
+"POT-Creation-Date: 2010-08-28 18:54+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Christoph Burgmer <cburgmer@ira.uka.de>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgid "PDF server"
 msgstr "PDF-Server"
 
 #: templates/confirm_delete.html:7 templates/confirm_delete_all.html:7
-#: templates/main.html:144
+#: templates/main.html:143
 msgid "Confirm deletion"
 msgstr "Bestätige Löschung"
 
@@ -43,7 +43,7 @@ msgstr "Größe"
 msgid "Pages"
 msgstr "Seiten"
 
-#: templates/confirm_delete_all.html:9 templates/main.html:145
+#: templates/confirm_delete_all.html:9 templates/main.html:144
 msgid "All files will be deleted. Are you sure?"
 msgstr "Alle Dateien werden gelöscht. Bist du sicher?"
 
@@ -77,7 +77,7 @@ msgstr "Anzahl Seiten"
 msgid "Optionally select pages (e.g. '1-4, 6, 19-')"
 msgstr "Selektiere wahlweise Seiten (z.B. '1-4, 6, 19-')"
 
-#: templates/main.html:93 templates/main.html.py:138
+#: templates/main.html:93 templates/main.html.py:137
 msgid "Delete"
 msgstr "Löschen"
 
@@ -93,27 +93,27 @@ msgstr "Alle"
 msgid "There are no uploaded files at present."
 msgstr "Es existieren zur Zeit keine hochgeladenen Dateien."
 
-#: templates/main.html:117
+#: templates/main.html:116
 msgid "Upload a new file"
 msgstr "Lade eine neue Datei hoch"
 
-#: templates/main.html:122
+#: templates/main.html:121
 msgid "Upload"
 msgstr "Hochladen"
 
-#: templates/main.html:140
+#: templates/main.html:139
 msgid "Delete all files"
 msgstr "Alle hochgeladenen Dateien löschen"
 
-#: templates/main.html:152
+#: templates/main.html:151
 msgid "Hints"
 msgstr "Hinweise"
 
-#: templates/main.html:154
+#: templates/main.html:153
 msgid "To simply join documents you can leave the page selection empty."
 msgstr "Um einfach zwei Dokumente zu vereinen, lasse die Seitenauswahl leer."
 
-#: templates/main.html:155
+#: templates/main.html:154
 msgid ""
 "If you want to insert pages from a document B into the middle of document A, "
 "upload A twice selecting first the initial and then the final range "
@@ -122,3 +122,15 @@ msgstr ""
 "Falls du Seiten aus Dokument B in die Mitte von Dokument A einfügen willst, "
 "dann lade A zweifach hoch und selektiere zu erst die Seiten am Anfang und "
 "danach die Seiten am Ende getrennt voneinander."
+
+#: templates/main.html:157
+msgid ""
+"<a href=\"http://cburgmer.nfshost.com/pdfserver\">Pdfserver</a> is <a href="
+"\"http://github.com/cburgmer/pdfserver/blob/master/LICENSE\">free and open "
+"source software</a> and is available from <a href=\"http://github.com/"
+"cburgmer/pdfserver\">Github</a>."
+msgstr ""
+"<a href=\"http://cburgmer.nfshost.com/pdfserver\">Pdfserver</a> ist eine "
+"<a href=\"http://github.com/cburgmer/pdfserver/blob/master/LICENSE\">Freie "
+"und Open-Source-Software</a> und kann von <a href=\"http://github.com/"
+"cburgmer/pdfserver\">Github</a> herunter geladen werden."

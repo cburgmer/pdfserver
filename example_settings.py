@@ -14,18 +14,13 @@ USE_L10N = True
 SESSION_SAVE_EVERY_REQUEST = True;
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True;
 
-DIRNAME = os.path.dirname(__file__)
-
-# Directory holding js and css files
-MEDIA_ROOT = os.path.abspath(os.path.join(DIRNAME, 'media'))
-
 # Upload parent directory directory. Uploads will go to UPLOAD_TO/uploads
-UPLOAD_TO = MEDIA_ROOT
+UPLOAD_TO = '/home/YOUR_USER/upload'
 
 # If you don't have other applications installed set you can set this
-ROOT_URLCONF = '[YOUR_PROJECT].pdfserver.urls'
+ROOT_URLCONF = 'pdfserver.urls'
 
-# pdfserver needs Sessions and supports Locales
+# pdfserver needs Sessions (installed by default) and supports Locales
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
