@@ -7,6 +7,10 @@ Powerful tools to manipulate PDF exist but they are not universally
 available on all systems or not simple to use. This server allows anyone to
 quickly solve basic PDF operations over the web.
 
+Example
+=======
+See http://cburgmer.nfshost.com/pdfserver/ for an example installation.
+
 Dependencies
 ============
 * Python 2.4, http://www.python.org
@@ -23,12 +27,9 @@ Features
 
 Deploy
 ======
-Asside from installing Python, Django and pyPdf you need to deploy the
-appropriate files from JQuery and jQueryUI. Run the following to download
-and copy the files::
+You can install this application with::
 
-    $ cd pdfserver
-    $ make deploy
+    $ python setup.py install pdfserver
 
 To start a project around pdfserver run the following steps:
 

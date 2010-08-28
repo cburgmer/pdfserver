@@ -1,7 +1,9 @@
 Translations
 ============
 See <http://docs.djangoproject.com/en/dev/topics/i18n/localization>.
+
 Create a new set of translations:
+    $ cd pdfserver
     $ django-admin.py makemessages -l en_GB
 
 Re-examine all sources and update translations:
@@ -9,3 +11,15 @@ Re-examine all sources and update translations:
 
 Compile catalogues:
     $ django-admin compilemessages
+
+
+Updating jQuery
+===============
+The necessary scripts of jQuery are packaged with this module. If you want to
+update the scripts do::
+
+    $ cd pdfserver
+
+Edit the download links in ``Makefile``, and then::
+
+    $ make deploy
