@@ -11,11 +11,11 @@
             resizable: false,
             modal: true,
             buttons: {
-                'Delete all files': function() {
+                '{% trans "Delete all files" %}': function() {
                     document.forms['deleteall'].submit();
                     $(this).dialog('close');
                 },
-                Cancel: function() {
+                '{% trans "Cancel" %}': function() {
                     $(this).dialog('close');
                 }
             }

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-28 18:54+0200\n"
+"POT-Creation-Date: 2010-08-28 22:41+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Christoph Burgmer <cburgmer@ira.uka.de>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgid "PDF server"
 msgstr "PDF-Server"
 
 #: templates/confirm_delete.html:7 templates/confirm_delete_all.html:7
-#: templates/main.html:143
+#: templates/main.html:144
 msgid "Confirm deletion"
 msgstr "Bestätige Löschung"
 
@@ -30,12 +30,12 @@ msgid "Are you sure you want to delete this file?"
 msgstr "Bist du sicher, dass du diese Datei löschen willst?"
 
 #: templates/confirm_delete.html:16 templates/confirm_delete_all.html:16
-#: templates/main.html:77
+#: templates/main.html:79
 msgid "Name"
 msgstr "Name"
 
 #: templates/confirm_delete.html:17 templates/confirm_delete_all.html:17
-#: templates/main.html:78
+#: templates/main.html:80
 msgid "Size"
 msgstr "Größe"
 
@@ -43,7 +43,7 @@ msgstr "Größe"
 msgid "Pages"
 msgstr "Seiten"
 
-#: templates/confirm_delete_all.html:9 templates/main.html:144
+#: templates/confirm_delete_all.html:9 templates/main.html:145
 msgid "All files will be deleted. Are you sure?"
 msgstr "Alle Dateien werden gelöscht. Bist du sicher?"
 
@@ -51,69 +51,69 @@ msgstr "Alle Dateien werden gelöscht. Bist du sicher?"
 msgid "Delete all"
 msgstr "Alle löschen"
 
-#: templates/confirm_delete_all.html:32
+#: templates/confirm_delete_all.html:32 templates/main.html:18
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: templates/main.html:62
+#: templates/main.html:14 templates/main.html.py:140
+msgid "Delete all files"
+msgstr "Alle Dateien löschen"
+
+#: templates/main.html:28 templates/main.html.py:138
+msgid "Delete"
+msgstr "Löschen"
+
+#: templates/main.html:35
+msgid "All"
+msgstr "Alle"
+
+#: templates/main.html:64
 msgid "Welcome to pdfserver"
 msgstr "Wilkommen zu pdfserver"
 
-#: templates/main.html:63
+#: templates/main.html:65
 msgid "Upload PDF files, drag them into the right order and recombine pages."
 msgstr ""
 "Lade PDF-Dateien hoch, schiebe sie in die richtige Reihenfolge und "
 "kombiniere Seiten neu."
 
-#: templates/main.html:65
+#: templates/main.html:67
 msgid "PDF files"
 msgstr "PDF-Dateien"
 
-#: templates/main.html:79
+#: templates/main.html:81
 msgid "Total pages"
 msgstr "Anzahl Seiten"
 
-#: templates/main.html:80
+#: templates/main.html:82
 msgid "Optionally select pages (e.g. '1-4, 6, 19-')"
 msgstr "Selektiere wahlweise Seiten (z.B. '1-4, 6, 19-')"
 
-#: templates/main.html:93 templates/main.html.py:137
-msgid "Delete"
-msgstr "Löschen"
-
-#: templates/main.html:100
+#: templates/main.html:102
 msgid "Combine &amp; open"
 msgstr "Kombinieren &amp; öffnen"
 
-#: templates/main.html:102
-msgid "All"
-msgstr "Alle"
-
-#: templates/main.html:108
+#: templates/main.html:109
 msgid "There are no uploaded files at present."
 msgstr "Es existieren zur Zeit keine hochgeladenen Dateien."
 
-#: templates/main.html:116
+#: templates/main.html:117
 msgid "Upload a new file"
 msgstr "Lade eine neue Datei hoch"
 
-#: templates/main.html:121
+#: templates/main.html:122
 msgid "Upload"
 msgstr "Hochladen"
 
-#: templates/main.html:139
-msgid "Delete all files"
-msgstr "Alle hochgeladenen Dateien löschen"
-
-#: templates/main.html:151
+#: templates/main.html:152
 msgid "Hints"
 msgstr "Hinweise"
 
-#: templates/main.html:153
+#: templates/main.html:154
 msgid "To simply join documents you can leave the page selection empty."
 msgstr "Um einfach zwei Dokumente zu vereinen, lasse die Seitenauswahl leer."
 
-#: templates/main.html:154
+#: templates/main.html:155
 msgid ""
 "If you want to insert pages from a document B into the middle of document A, "
 "upload A twice selecting first the initial and then the final range "
@@ -123,14 +123,14 @@ msgstr ""
 "dann lade A zweifach hoch und selektiere zu erst die Seiten am Anfang und "
 "danach die Seiten am Ende getrennt voneinander."
 
-#: templates/main.html:157
+#: templates/main.html:158
 msgid ""
 "<a href=\"http://cburgmer.nfshost.com/pdfserver\">Pdfserver</a> is <a href="
 "\"http://github.com/cburgmer/pdfserver/blob/master/LICENSE\">free and open "
 "source software</a> and is available from <a href=\"http://github.com/"
 "cburgmer/pdfserver\">Github</a>."
 msgstr ""
-"<a href=\"http://cburgmer.nfshost.com/pdfserver\">Pdfserver</a> ist eine "
-"<a href=\"http://github.com/cburgmer/pdfserver/blob/master/LICENSE\">Freie "
-"und Open-Source-Software</a> und kann von <a href=\"http://github.com/"
-"cburgmer/pdfserver\">Github</a> heruntergeladen werden."
+"<a href=\"http://cburgmer.nfshost.com/pdfserver\">Pdfserver</a> ist eine <a "
+"href=\"http://github.com/cburgmer/pdfserver/blob/master/LICENSE\">Freie und "
+"Open-Source-Software</a> und kann von <a href=\"http://github.com/cburgmer/"
+"pdfserver\">Github</a> heruntergeladen werden."
