@@ -23,15 +23,17 @@
         // nice input buttons
         $(".deletebutton").button({
             icons: {
-                primary: 'ui-icon-circle-close'
+                primary: 'ui-icon-circle-close',
             },
-            text: false
+            label: "{% trans "Delete" %}",
+            text: false,
         });
         $(".deleteallbutton").button({
             icons: {
-                primary: 'ui-icon-circle-close'
+                primary: 'ui-icon-circle-close',
             },
-            text: true
+            label: "{% trans "All" %}",
+            text: true,
         });
         $(".combinebutton").button({
             icons: {
@@ -90,7 +92,7 @@
             <td><span class="text">{{upload.file.size|filesizeformat}}</span></td>
             <td style="text-align: right;"><span class="text">{{upload.page_count}}</span></td>
             <td><input type="text" name="pages_{{ forloop.counter }}"/></td>
-            <td style="text-align: right;"><a class="deletebutton" id="deleteanchor_{{ forloop.counter }}" href="#" onclick="document.forms['deletefile_{{ forloop.counter }}'].submit(); return false"></a><script type="text/javascript">$("#deleteanchor_{{ forloop.counter }}").text('{% trans "Delete" %}');</script></td>
+            <td style="text-align: right;"><a class="deletebutton" id="deleteanchor_{{ forloop.counter }}" href="#" onclick="document.forms['deletefile_{{ forloop.counter }}'].submit(); return false"></a></td>
         </tr>
     {% endfor %}
     </tbody>
@@ -98,8 +100,7 @@
         <tr>
             <td colspan="5" style="text-align: right;">
             <span style="font-size: 1.1em;"><button type="submit" class="combinebutton">{% trans "Combine &amp; open" %}</button></td>
-            <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton" onclick="$('#deleteall').dialog('open'); return false"></a></span>
-            <script type="text/javascript">$("#deleteallanchor").append('{% trans "All" %}');</script></td>
+            <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton" onclick="$('#deleteall').dialog('open'); return false"></a></span></td>
         </tr>
     </tfoot>
     {% else %}
