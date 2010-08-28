@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<script type="text/javascript">
+    $(function() {
+        $("#files").sortable();
+        $("#files").disableSelection();
+        // delete all popop dialog
+        $("#deleteall").dialog({
+            autoOpen: false,
+            resizable: false,
+            modal: true,
+            buttons: {
+                'Delete all files': function() {
+                    document.forms['deleteall'].submit();
+                    $(this).dialog('close');
+                },
+                Cancel: function() {
+                    $(this).dialog('close');
+                }
+            }
+        });
+        // nice input buttons
+        $(".deletebutton").button({
+            icons: {
+                primary: 'ui-icon-circle-close'
+            },
+            text: false
+        });
+        $(".deleteallbutton").button({
+            icons: {
+                primary: 'ui-icon-circle-close'
+            },
+            text: true
+        });
+        $(".combinebutton").button({
+            icons: {
+                primary: 'ui-icon-document'
+            },
+            text: true
+        });
+        $(".uploadbutton").button({
+            icons: {
+                primary: 'ui-icon-plusthick'
+            },
+            text: true
+        });
+    });
+</script>
+<style type="text/css">
+        #filetable { width: 80%; border-spacing: 0; }
+        #files tr { height: 20px; background-color:#eef; cursor: default; }
+        #files * .text { font-size: 1.2em; }
+        #filetable * th { border: 1px; border-style:none none solid none; }
+        #filetable * td { padding: 2px; }
+        .footer { margin-top: 40px; color: #888; }
+        .footer a { font-weight:bold; color:#888; text-decoration:none; }
+        .footer a:visited { color:#666; }
+        .footer a:hover { text-decoration:underline; }
+        .footer a:active { text-decoration:underline; }
+</style>
+<h1>{% trans "Welcome to pdfserver" %}</h1>
+<p>{% trans "Upload PDF files, drag them into the right order and recombine pages." %}</p>
+
+<h3>{% trans "PDF files" %}</h3>
+{% if form.errors %}
+<p>
+{{form.errors}}
+</p>
+{% endif %}
+<form action="{% url combine_pdfs %}" name="combine" method="post" onsubmit="document.forms['combine'].elements['order'].value = $('#files').sortable('serialize'); return true">{% csrf_token %}
+<input type="hidden" name="order" value=""/>
+<table id="filetable">
+    <thead>
+    <tr>
+        <th></th>
+        <th style="width: 60%;">{% trans "Name" %}</th>
+        <th>{% trans "Size" %}</th>
+        <th>{% trans "Total pages" %}</th>
+        <th><span style="font-style:italic;">{% trans "Optionally select pages (e.g. '1-4, 6, 19-')" %}</span></th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody id="files">
+    {% if uploads %}
+    {% for upload in uploads %}
+        <tr class="{% cycle 'even' 'odd' %}" id="file_{{ forloop.counter }}">
+            <td><span class="ui-icon ui-icon-arrowthick-2-n-s"></span></td>
+            <td><span class="text">{{upload.filename}}</span></td>
+            <td><span class="text">{{upload.file.size|filesizeformat}}</span></td>
+            <td style="text-align: right;"><span class="text">{{upload.page_count}}</span></td>
+            <td><input type="text" name="pages_{{ forloop.counter }}"/></td>
+            <td style="text-align: right;"><a class="deletebutton" id="deleteanchor_{{ forloop.counter }}" href="#" onclick="document.forms['deletefile_{{ forloop.counter }}'].submit(); return false"></a><script type="text/javascript">$("#deleteanchor_{{ forloop.counter }}").text('{% trans "Delete" %}');</script></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="5" style="text-align: right;">
+            <span style="font-size: 1.1em;"><button type="submit" class="combinebutton">{% trans "Combine &amp; open" %}</button></td>
+            <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton" onclick="$('#deleteall').dialog('open'); return false"></a></span>
+            <script type="text/javascript">$("#deleteallanchor").append('{% trans "All" %}');</script></td>
+        </tr>
+    </tfoot>
+    {% else %}
+    <tbody>
+        <tr>
+            <td colspan="6"><span style="font-style:italic;">{% trans "There are no uploaded files at present." %}</span></td>
+        </tr>
+    </tbody>
+    {% endif %}
+</table>
+</form>
+<div id="upload">
+    <form action="{% url upload %}" method="post" enctype="multipart/form-data" accept-charset="utf-8">{% csrf_token %}
+        <h3>{% trans "Upload a new file" %}</h3>
+        {{form.file}}
+        {% if form.file.errors %}
+            {{form.file.errors}}
+        {% endif %}
+        <button type="submit" class="uploadbutton">{% trans "Upload" %}</button>
+    </form>
+</div>
+{% if uploads %}
+<!-- HTML wouldn't allow us to place a form inside a form, so put basis here and call by Javascript -->
+{% for upload in uploads %}
+    <form action="{% url delete %}" method="post" name="deletefile_{{ forloop.counter }}">{% csrf_token %}
+        <input type="hidden" name="id" value="{{upload.id}}"/>
+        <input type="hidden" name="delete" value="Delete"/>
+    </form>
+{% endfor %}
+{% endif %}
+
+<noscript>
+<!-- Allow at least deletion of all files if Javascript isn't around -->
+<div>
+    <h3>{% trans "Delete" %}</h3>
+    <form action="{% url confirm_delete_all %}" method="post">{% csrf_token %}
+        <input type="submit" value="{% trans "Delete all files" %}"/>
+    </form>
+</div>
+</noscript>
+<div id="deleteall" title="{% trans "Confirm deletion" %}">
+        <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>{% trans "All files will be deleted. Are you sure?" %}</p>
+        <form action="{% url delete_all %}" name="deleteall" method="post">{% csrf_token %}
+        <input type="hidden" name="delete" value="Delete all"/>
+        </form>
+</div>
+
+<div style="margin-top: 30px;">
+<h3>{% trans "Hints" %}</h3>
+<ul>
+<li>{% trans "To simply join documents you can leave the page selection empty." %}</li>
+<li>{% trans "If you want to insert pages from a document B into the middle of document A, upload A twice selecting first the initial and then the final range separately." %}</li>
+</ul>
+
+<div class="footer"><a href="http://cburgmer.nfshost.com/pdfserver">Pdfserver</a> is <a href="http://github.com/cburgmer/pdfserver/blob/master/LICENSE">free and open source software</a> and is available from <a href="http://github.com/cburgmer/pdfserver">Github</a>.</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+* Warn that cookies need to be activated.
+* Clean up expired sessions & files from these sessions (use CRON).
+* Don't attach files to session object, too strictly depends on Django's 
+  session db implementation.
+* More PDF features
+* Work even when Javascript is disabled

@@ -1,0 +1,11 @@
+Translations
+============
+See <http://docs.djangoproject.com/en/dev/topics/i18n/localization>.
+Create a new set of translations:
+    $ django-admin.py makemessages -l en_GB
+
+Re-examine all sources and update translations:
+    $ django-admin makemessages -a
+
+Compile catalogues:
+    $ django-admin compilemessages

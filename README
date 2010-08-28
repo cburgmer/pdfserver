@@ -1,0 +1,49 @@
+Pdfserver is a Django application that offers basic PDF operations as a
+webservice. It depends on pyPdf to manipulate PDFs.
+
+Rationale
+=========
+Powerful tools to manipulate PDF exist but they are not universally
+available on all systems or not simple to use. This server allows anyone to
+quickly solve basic PDF operations over the web.
+
+Dependencies
+============
+* Python 2.4, http://www.python.org
+* Django (tested with 1.2), http://www.djangoproject.com/
+* pyPdf (tested with 1.12), http://pybrary.net/pyPdf/
+* jQuery & jQuery UI (tested with 1.8.4), http://jquery.com/
+  needs at least UI core, "Sortable" and "Dialog" from jQuery UI
+
+Features
+========
+- Designed to work with&without Javascript
+- Joining of files
+- Selecting pages & page ranges
+
+Deploy
+======
+Asside from installing Python, Django and pyPdf you need to deploy the
+appropriate files from JQuery and jQueryUI. Run the following to download
+and copy the files:
+
+    $ cd pdfserver
+    $ make deploy
+
+To start a project around pdfserver run the following steps:
+
+1. Create a new project
+    $ django-admin startproject myserver
+  
+2. Edit settings to fit pdfserver's needs (``myserver/settings.py``) following
+   the example in pdfserver/example_settings.py
+
+3. Create the database
+    $ python manage.py syncdb
+
+4. When not in debug mode make sure to serve static files under ``media/js/*``
+    and ``media/css/*``.
+
+Contact
+=======
+Christoph Burgmer <cburgmer (at) ira uka de>.
