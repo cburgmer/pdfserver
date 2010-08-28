@@ -4,3 +4,4 @@
   session db implementation.
 * More PDF features
 * Work even when Javascript is disabled
+* Validate input ranges with Javascript
