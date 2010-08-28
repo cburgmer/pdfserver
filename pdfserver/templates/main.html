@@ -4,7 +4,7 @@
 <script type="text/javascript">
     $(function() {
         $("#files").sortable();
-        $("#files").disableSelection();
+        $(".noselection").disableSelection();
         // delete all popop dialog
         $("#deleteall").dialog({
             autoOpen: false,
@@ -75,22 +75,22 @@
 <table id="filetable">
     <thead>
     <tr>
-        <th></th>
-        <th style="width: 60%;">{% trans "Name" %}</th>
-        <th>{% trans "Size" %}</th>
-        <th>{% trans "Total pages" %}</th>
-        <th><span style="font-style:italic;">{% trans "Optionally select pages (e.g. '1-4, 6, 19-')" %}</span></th>
-        <th></th>
+        <th style="width: 20px;"></th>
+        <th>{% trans "Name" %}</th>
+        <th style="width: 80px;">{% trans "Size" %}</th>
+        <th style="width: 40px;">{% trans "Total pages" %}</th>
+        <th style="width: 180px;"><span style="font-style:italic;">{% trans "Optionally select pages (e.g. '1-4, 6, 19-')" %}</span></th>
+        <th style="width: 40px;"></th>
     </tr>
     </thead>
     <tbody id="files">
     {% if uploads %}
     {% for upload in uploads %}
         <tr class="{% cycle 'even' 'odd' %}" id="file_{{ forloop.counter }}">
-            <td><span class="ui-icon ui-icon-arrowthick-2-n-s"></span></td>
-            <td><span class="text">{{upload.filename}}</span></td>
-            <td><span class="text">{{upload.file.size|filesizeformat}}</span></td>
-            <td style="text-align: right;"><span class="text">{{upload.page_count}}</span></td>
+            <td><span class="noselection ui-icon ui-icon-arrowthick-2-n-s"></span></td>
+            <td><span class="noselection text">{{upload.filename}}</span></td>
+            <td><span class="noselection text">{{upload.file.size|filesizeformat}}</span></td>
+            <td style="text-align: right;"><span class="noselection text">{{upload.page_count}}</span></td>
             <td><input type="text" name="pages_{{ forloop.counter }}"/></td>
             <td style="text-align: right;"><a class="deletebutton" id="deleteanchor_{{ forloop.counter }}" href="#" onclick="document.forms['deletefile_{{ forloop.counter }}'].submit(); return false"></a></td>
         </tr>

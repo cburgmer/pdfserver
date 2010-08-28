@@ -146,7 +146,7 @@ def combine_pdfs(request):
         page_ranges = []
         if pages:
             # TODO report errorneous inputs to user, Javascript?
-            ranges = re.findall(r'\d+\s*-\s*\d*|\d*-\*\d+|\d+', pages)
+            ranges = re.findall(r'\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+', pages)
             for pages in ranges:
                 match_obj = re.match(r'^(\d*)\s*-\s*(\d*)$', pages)
                 if match_obj:
