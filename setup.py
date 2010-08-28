@@ -1,15 +1,18 @@
 import ez_setup
 ez_setup.use_setuptools()
 from setuptools import setup, find_packages
+
 setup(
     name = "django-pdfserver",
     version = "0.1",
-    packages = find_packages(),
+    packages = ['pdfserver'],
     author = "Christoph Burgmer",
     author_email = "cburgmer@ira.uka.de",
     description = "A Django application that offers basic PDF operations as a webservice.",
+    long_description=open('README').read(),
     url = "http://cburgmer.nfshost.com/pdfserver/",
-    include_package_data = True,
+    package_data = {'pdfserver': ['templates/*.html', 'locale/*/*.mo', 'locale/*/*.po',
+                                  'media/css/*.css', 'media/css/images/*','media/js/*.js']},
     classifiers = [
     	"Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

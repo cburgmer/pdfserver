@@ -1,0 +1,6 @@
+include pdfserver/locale/*/*/django.po
+include pdfserver/locale/*/*/django.mo
+include pdfserver/templates/*.html
+include pdfserver/media/js/*.js
+include pdfserver/media/css/images/*
+include pdfserver/media/css/*.css
