@@ -139,6 +139,13 @@ def combine_pdfs(request):
     session = Session.objects.get(session_key=request.session.session_key)
     files = Upload.objects.filter(session=session)
 
+    # Get options
+    try:
+        # make sure value is multiple of 90
+        rotate = int(request.POST.get('rotate', '0')) / 90 * 90
+    except ValueError:
+        rotate = 0
+
     # Get pdf objects and arrange in the user selected order, then parse ranges
     order = request.POST.get('order', "")
     for item_idx, file_obj in order_files(files, order):
@@ -178,6 +185,11 @@ def combine_pdfs(request):
         for page_range in page_ranges:
             for page_idx in page_range:
                 page = pdf_obj.getPage(page_idx)
+
+                # Apply options
+                if rotate:
+                    page = page.rotateClockwise(rotate)
+
                 output.addPage(page)
 
     # TODO get proper file name
