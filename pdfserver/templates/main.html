@@ -71,6 +71,13 @@
         <th style="width: 40px;"></th>
     </tr>
     </thead>
+    <tfoot>
+        <tr>
+            <td colspan="5" style="text-align: right;">
+            <span style="font-size: 1.1em;"><button type="submit" class="combinebutton">{% trans "Combine &amp; open" %}</button></td>
+            <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton" onclick="$('#deleteall').dialog('open'); return false"></a></span></td>
+        </tr>
+    </tfoot>
     <tbody id="files">
     {% if uploads %}
     {% for upload in uploads %}
@@ -84,13 +91,6 @@
         </tr>
     {% endfor %}
     </tbody>
-    <tfoot>
-        <tr>
-            <td colspan="5" style="text-align: right;">
-            <span style="font-size: 1.1em;"><button type="submit" class="combinebutton">{% trans "Combine &amp; open" %}</button></td>
-            <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton" onclick="$('#deleteall').dialog('open'); return false"></a></span></td>
-        </tr>
-    </tfoot>
     {% else %}
     <tbody>
         <tr>
@@ -142,6 +142,7 @@
 <li>{% trans "To simply join documents you can leave the page selection empty." %}</li>
 <li>{% trans "If you want to insert pages from a document B into the middle of document A, upload A twice selecting first the initial and then the final range separately." %}</li>
 </ul>
+</div>
 
 <div class="footer">{% blocktrans %}<a href="http://cburgmer.nfshost.com/pdfserver">Pdfserver</a> is <a href="http://github.com/cburgmer/pdfserver/blob/master/LICENSE">free and open source software</a> and is available from <a href="http://github.com/cburgmer/pdfserver">Github</a>.{% endblocktrans %}</div>
 {% endblock %}
