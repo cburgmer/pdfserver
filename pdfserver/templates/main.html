@@ -2,6 +2,22 @@
 {% load i18n %}
 {% block content %}
 <script type="text/javascript">
+    $.validator.addMethod(
+        "pageranges",
+        function(value, element) {
+            // accept combinations of "1-10", "-10", "1-" separated by "," or ";" or "/" but no single "0"
+            return this.optional(element) || /^\s*(\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+)(\s*[;,\/]\s*(\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+))*\s*$/.test(value) && 0 < Math.min(value.split(/\D+/g));
+        },
+        "{% trans "Please check your input." %}"
+    );
+    $.validator.addMethod(
+        "maxpages",
+        function(value, element, param) {       
+            // make sure all numbers mentioned are smaller or equal to parameter
+            return this.optional(element) || Math.max(value.split(/\D+/g)) <= param;
+        },
+        "{% trans "There are only maximum {0} pages." %}"
+    );    
     $(function() {
         $("#files").sortable();
         $(".noselection").disableSelection();
@@ -47,7 +63,9 @@
             },
             text: true
         });
+        $("#filesform").validate();
     });
+//   $(function() {$("#pages_{{ forloop.counter }}").rules("add", { }));
 </script>
 <h1>{% trans "Welcome to pdfserver" %}</h1>
 <p>{% trans "Upload PDF files, drag them into the right order and recombine pages." %}</p>
@@ -58,7 +76,7 @@
 {{form.errors}}
 </p>
 {% endif %}
-<form action="{% url combine_pdfs %}" name="combine" method="post" onsubmit="document.forms['combine'].elements['order'].value = $('#files').sortable('serialize'); return true">{% csrf_token %}
+<form action="{% url combine_pdfs %}" id="filesform" name="combine" method="post" onsubmit="document.forms['combine'].elements['order'].value = $('#files').sortable('serialize'); return true">{% csrf_token %}
 <input type="hidden" name="order" value=""/>
 <table id="filetable">
     <thead>
@@ -86,7 +104,9 @@
             <td><span class="noselection text">{{upload.filename}}</span></td>
             <td><span class="noselection text">{{upload.file.size|filesizeformat}}</span></td>
             <td style="text-align: right;"><span class="noselection text">{{upload.page_count}}</span></td>
-            <td><input type="text" name="pages_{{ forloop.counter }}"/></td>
+            <td><input type="text" class="pageranges" name="pages_{{ forloop.counter }}" id="pages_{{ forloop.counter }}"/>
+            <script type="text/javascript">$(function() {$("#pages_{{ forloop.counter }}").rules("add", {maxpages: {{upload.page_count}} })});</script>
+            </td>
             <td style="text-align: right;"><a class="deletebutton" id="deleteanchor_{{ forloop.counter }}" href="#" onclick="document.forms['deletefile_{{ forloop.counter }}'].submit(); return false"></a></td>
         </tr>
     {% endfor %}

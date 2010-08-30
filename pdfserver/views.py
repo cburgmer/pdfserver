@@ -149,13 +149,11 @@ def combine_pdfs(request):
         pages = request.POST.get('pages_%d' % item_idx, "")
         page_ranges = []
         if pages:
-            # TODO report errorneous inputs to user, Javascript?
             ranges = re.findall(r'\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+', pages)
             for pages in ranges:
                 match_obj = re.match(r'^(\d*)\s*-\s*(\d*)$', pages)
                 if match_obj:
                     from_page, to_page = match_obj.groups()
-                    # TODO report errorneous input to user, Javascript?
                     if from_page:
                         from_page_idx = max(int(from_page)-1, 0)
                     else:
@@ -168,7 +166,6 @@ def combine_pdfs(request):
                     page_ranges.append(range(from_page_idx, to_page_idx))
                 else:
                     page_idx = int(pages)-1
-                    # TODO report errorneous input to user, Javascript?
                     if page_idx >= 0 and page_idx < page_count:
                         page_ranges.append([page_idx])
         else:

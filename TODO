@@ -4,6 +4,5 @@
   session db implementation.
 * More PDF features
 * Work even when Javascript is disabled
-* Validate input ranges with Javascript
 * Ranges vanish when file is added and page reloaded                                                                    
 * Licenses of included files
