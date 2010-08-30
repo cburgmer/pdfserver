@@ -2,6 +2,7 @@
 {% load i18n %}
 {% block content %}
 <script type="text/javascript">
+//<![CDATA[
     Array.max = function( array ){
         return Math.max.apply(Math , array);
     };
@@ -85,7 +86,7 @@
         });
         $("#filesform").validate();
     });
-//   $(function() {$("#pages_{{ forloop.counter }}").rules("add", { }));
+//]]>
 </script>
 <h1>{% trans "Welcome to pdfserver" %}</h1>
 <p>{% trans "Upload PDF files, drag them into the right order and recombine pages." %}</p>
