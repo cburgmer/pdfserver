@@ -10,3 +10,4 @@
 .footer a:active { text-decoration:underline; }
 #moreoptions { background-color:#efe; }
 #moreoptions td { border: 1px; border-style: solid none none; padding: 6px; }
+#moreoptions td span { display: inline-block; height: 100%; vertical-align: top; margin: 3px; }
