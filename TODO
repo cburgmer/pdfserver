@@ -6,3 +6,5 @@
 * Work even when Javascript is disabled
 * Ranges vanish when file is added and page reloaded                                                                    
 * Licenses of included files
+* Fix Makefile to properly overwrite css and js 
+  (currently needs an empty directory)

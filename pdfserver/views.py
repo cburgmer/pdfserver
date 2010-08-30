@@ -131,6 +131,28 @@ def combine_pdfs(request):
 
         return ((idx, files[idx-1]) for idx in order)
 
+    def write_text_overlay(text, filename):
+        try:
+            from reportlab.platypus import SimpleDocTemplate, Spacer, Paragraph
+            from reportlab.lib import styles, enums, colors, units
+        except ImportError:
+            return None
+
+        styles = styles.getSampleStyleSheet()
+        style = styles["Normal"]
+        style.fontSize = 100
+        style.leading = 110
+        style.alignment = enums.TA_CENTER
+        gray = colors.slategrey
+        gray.alpha = 0.5
+        style.textColor = gray
+
+        doc = SimpleDocTemplate(filename)
+        doc.build([Spacer(1, 3.5 * units.inch), Paragraph(text, style)])
+
+	return filename
+
+
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
@@ -138,6 +160,29 @@ def combine_pdfs(request):
 
     session = Session.objects.get(session_key=request.session.session_key)
     files = Upload.objects.filter(session=session)
+
+    # Get options
+    try:
+        # make sure value is multiple of 90
+        rotate = int(request.POST.get('rotate', '0')) / 90 * 90
+    except ValueError:
+        rotate = 0
+
+    overlay = None
+    try:
+        text_overlay = request.POST.get('text_overlay', None)
+        if text_overlay:
+            # create tempfile
+            import tempfile
+            s = tempfile.NamedTemporaryFile()
+            # write pdf overlay with reportpdf
+            write_text_overlay(text_overlay, s.name)
+            # get page object
+            overlay_pdf = PdfFileReader(file(s.name, "rb"))
+            overlay = overlay_pdf.getPage(0)
+            #s.close() TODO
+    except IOError:
+        pass
 
     # Get pdf objects and arrange in the user selected order, then parse ranges
     order = request.POST.get('order', "")
@@ -175,6 +220,13 @@ def combine_pdfs(request):
         for page_range in page_ranges:
             for page_idx in page_range:
                 page = pdf_obj.getPage(page_idx)
+
+                # Apply options
+                if rotate:
+                    page = page.rotateClockwise(rotate)
+                if overlay:
+                    page.mergePage(overlay)
+
                 output.addPage(page)
 
     # TODO get proper file name

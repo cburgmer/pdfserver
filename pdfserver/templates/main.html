@@ -57,13 +57,27 @@
             label: "{% trans "All" %}",
             text: true,
         });
-        $(".combinebutton").button({
+        $("#combinebutton").button({
             icons: {
                 primary: 'ui-icon-document'
             },
             text: true
         });
-        $(".uploadbutton").button({
+        $("#moreoptionsbutton").button({
+            icons: {
+                primary: 'ui-icon-circlesmall-plus'
+            },
+            label: "{% trans "More options" %}",
+            text: true
+        });
+        $("#lessoptionsbutton").button({
+            icons: {
+                primary: 'ui-icon-circlesmall-minus'
+            },
+            label: "{% trans "Less options" %}",
+            text: true
+        });
+        $("#uploadbutton").button({
             icons: {
                 primary: 'ui-icon-plusthick'
             },
@@ -97,9 +111,28 @@
     </thead>
     {% if uploads %}
     <tfoot>
+        <tr id="moreoptions">
+            <td colspan="6">
+                <span>
+                    {% trans "Rotate clockwise by" %}<br/>
+                    <input type="radio" name="rotate" value="0" checked="checked" /> 0°<br/>
+                    <input type="radio" name="rotate" value="90"/> 90°<br/>
+                    <input type="radio" name="rotate" value="180"/> 180°<br/>
+                    <input type="radio" name="rotate" value="270"/> 270°
+                </span>
+                <span>
+                    {% trans "Insert watermark (e.g. 'DRAFT')" %}<br/>
+                    <input type="text" name="text_overlay"/>
+                </span>
+            </td>
+        </tr>
+        <script type="text/javascript">$('#moreoptions').hide();</script>
         <tr>
-            <td colspan="5" style="text-align: right;">
-            <span style="font-size: 1.1em;"><button type="submit" class="combinebutton">{% trans "Combine &amp; open" %}</button></span></td>
+            <td colspan="5" style="text-align: right;"><span style="font-size: 1.1em;">
+            <a href="#" id="moreoptionsbutton" onclick="$('#moreoptions').fadeIn();$('#moreoptionsbutton').hide();$('#lessoptionsbutton').show();"></a>
+            <a href="#" style="display: none;" id="lessoptionsbutton" onclick="$('#moreoptions').fadeOut();$('#lessoptionsbutton').hide();$('#moreoptionsbutton').show();"></a>
+            <button type="submit" id="combinebutton">{% trans "Combine &amp; open" %}</button>
+            </span></td>
             <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton" onclick="$('#deleteall').dialog('open'); return false"></a></span></td>
         </tr>
     </tfoot>
@@ -133,7 +166,7 @@
         {% if form.file.errors %}
             {{form.file.errors}}
         {% endif %}
-        <button type="submit" class="uploadbutton">{% trans "Upload" %}</button>
+        <button type="submit" id="uploadbutton">{% trans "Upload" %}</button>
     </form>
 </div>
 {% if uploads %}

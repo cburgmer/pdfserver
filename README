@@ -16,14 +16,22 @@ Dependencies
 * Python 2.4, http://www.python.org
 * Django (tested with 1.2), http://www.djangoproject.com/
 * pyPdf (tested with 1.12), http://pybrary.net/pyPdf/
+
+Optionally
+----------
+* python-reportlab (tested with 2.4), 
+  http://www.reportlab.com/software/opensource/rl-toolkit/
 * jQuery & jQuery UI (tested with 1.8.4), http://jquery.com/
-  needs at least UI core, "Sortable" and "Dialog" from jQuery UI
+  needs at least UI core, "Sortable" and "Dialog" from jQuery UI,
+  but is already built in and shipped with pdfserver
 
 Features
 ========
 - Designed to work with&without Javascript
 - Joining of files
 - Selecting pages & page ranges
+- Rotate pages
+- Add watermark to pages
 
 Deploy
 ======
