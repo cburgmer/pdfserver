@@ -8,7 +8,7 @@ setup(
     packages = ['pdfserver'],
     author = "Christoph Burgmer",
     author_email = "cburgmer@ira.uka.de",
-    description = "A Django application that offers basic PDF operations as a webservice.",
+    description = "Pdfserver is a webservice that offers common PDF operations like joining documents or selecting pages.",
     long_description=open('README').read(),
     url = "http://cburgmer.nfshost.com/pdfserver/",
     package_data = {'pdfserver': ['templates/*.html', 'locale/*/*.mo', 'locale/*/*.po',
