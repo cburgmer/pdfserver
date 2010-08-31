@@ -8,4 +8,3 @@
 * Licenses of included files
 * Fix Makefile to properly overwrite css and js 
   (currently needs an empty directory)
-* Show buttons by default, just don't act as long no documents are included

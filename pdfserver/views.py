@@ -156,10 +156,12 @@ def combine_pdfs(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
-    output = PdfFileWriter()
-
     session = Session.objects.get(session_key=request.session.session_key)
     files = Upload.objects.filter(session=session)
+
+    # If user clicked on button but no files were uploaded
+    if not files:
+        return HttpResponseRedirect(reverse('uploads'))
 
     # Get options
     try:
@@ -183,6 +185,8 @@ def combine_pdfs(request):
             #s.close() TODO
     except IOError:
         pass
+
+    output = PdfFileWriter()
 
     # Get pdf objects and arrange in the user selected order, then parse ranges
     order = request.POST.get('order', "")

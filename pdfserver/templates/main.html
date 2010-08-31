@@ -110,7 +110,6 @@
         <th style="width: 40px;"></th>
     </tr>
     </thead>
-    {% if uploads %}
     <tfoot>
         <tr id="moreoptions">
             <td colspan="6">
@@ -132,11 +131,12 @@
             <td colspan="5" style="text-align: right;"><span style="font-size: 1.1em;">
             <a href="#" id="moreoptionsbutton" onclick="$('#moreoptions').fadeIn();$('#moreoptionsbutton').hide();$('#lessoptionsbutton').show();"></a>
             <a href="#" style="display: none;" id="lessoptionsbutton" onclick="$('#moreoptions').fadeOut();$('#lessoptionsbutton').hide();$('#moreoptionsbutton').show();"></a>
-            <button type="submit" id="combinebutton">{% trans "Combine &amp; open" %}</button>
+            <button type="submit" id="combinebutton"{% if uploads %}{% else %} onclick="return false"{% endif %}>{% trans "Combine &amp; open" %}</button>
             </span></td>
-            <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton" onclick="$('#deleteall').dialog('open'); return false"></a></span></td>
+            <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton"{% if uploads %} onclick="$('#deleteall').dialog('open'); return false"{% else %} onclick="return false"{% endif %}></a></span></td>
         </tr>
     </tfoot>
+    {% if uploads %}
     <tbody id="files">
     {% for upload in uploads %}
         <tr class="{% cycle 'even' 'odd' %}" id="file_{{ forloop.counter }}">
