@@ -32,9 +32,10 @@ jquery-validate: tmp/jquery.validate.min.js
 	cp tmp/jquery.validate.min.js tmp/media/js/jquery.validate.min.js
 
 deploy: jquery jquery-ui jquery-validate
-	mkdir -p media
-	mv tmp/media/css media/
-	mv tmp/media/js media/
+	mkdir -p media/css
+	mkdir -p media/js
+	mv tmp/media/css/* media/css
+	mv tmp/media/js/* media/js
 
 clean:
 	rm -r tmp/
