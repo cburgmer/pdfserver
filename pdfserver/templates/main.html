@@ -128,9 +128,11 @@
         </tr>
         <script type="text/javascript">$('#moreoptions').hide();</script>
         <tr>
-            <td colspan="5" style="text-align: right;"><span style="font-size: 1.1em;">
+            <td colspan="2"><span style="font-size: 1.1em;">
             <a href="#" id="moreoptionsbutton" onclick="$('#moreoptions').fadeIn();$('#moreoptionsbutton').hide();$('#lessoptionsbutton').show();"></a>
             <a href="#" style="display: none;" id="lessoptionsbutton" onclick="$('#moreoptions').fadeOut();$('#lessoptionsbutton').hide();$('#moreoptionsbutton').show();"></a>
+            </span></td>
+            <td colspan="3" style="text-align: right;"><span style="font-size: 1.1em;">
             <button type="submit" id="combinebutton"{% if uploads %}{% else %} onclick="return false"{% endif %}>{% trans "Combine &amp; open" %}</button>
             </span></td>
             <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton"{% if uploads %} onclick="$('#deleteall').dialog('open'); return false"{% else %} onclick="return false"{% endif %}></a></span></td>
