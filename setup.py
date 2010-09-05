@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "django-pdfserver",
-    version = "0.1",
+    version = "0.2.1",
     packages = ['pdfserver'],
     author = "Christoph Burgmer",
     author_email = "cburgmer@ira.uka.de",
