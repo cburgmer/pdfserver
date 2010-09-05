@@ -24,13 +24,18 @@ Optionally
 ----------
 * python-reportlab (tested with 2.4) for adding watermarks,
   http://www.reportlab.com/software/opensource/rl-toolkit/
+
+Already included
+----------------
 * jQuery & jQuery UI (tested with 1.8.4) (both already shipped with pdfserver),
   needs at least UI core, "Sortable" and "Dialog" from jQuery UI,
   http://jquery.com/
+* jQuery plugin: Validation,
+  http://bassistance.de/jquery-plugins/jquery-plugin-validation/
 
 Features
 ========
-- Simple yet powerful
+- Simple, yet powerful
 - Designed to work with&without Javascript
 - Joining of files
 - Selecting pages & page ranges

@@ -3,4 +3,3 @@
 * Don't attach files to session object, too strictly depends on Django's 
   session db implementation.
 * Ranges vanish when file is added and page reloaded                                                                    
-* Licenses of included files
