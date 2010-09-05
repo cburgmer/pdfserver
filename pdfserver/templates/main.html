@@ -126,7 +126,6 @@
                 </span>
             </td>
         </tr>
-        <script type="text/javascript">$('#moreoptions').hide();</script>
         <tr>
             <td colspan="2"><span style="font-size: 1.1em;">
             <a href="#" id="moreoptionsbutton" onclick="$('#moreoptions').fadeIn();$('#moreoptionsbutton').hide();$('#lessoptionsbutton').show();"></a>
@@ -161,6 +160,7 @@
     </tbody>
     {% endif %}
 </table>
+<script type="text/javascript">$('#moreoptions').hide();</script>
 </form>
 <div id="upload">
     <form action="{% url upload %}" method="post" enctype="multipart/form-data" accept-charset="utf-8">{% csrf_token %}
