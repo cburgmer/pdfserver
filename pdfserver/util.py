@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import math
-import itertools
+try:
+    from itertools import product
+except ImportError:
+    def product(*args):
+        ans = [[]]
+        for arg in args:
+            ans = [x+[y] for x in ans for y in arg]
+        return ans
 
 from pyPdf import PdfFileWriter, PdfFileReader
 from pyPdf.pdf import PageObject
@@ -89,13 +96,13 @@ def n_pages_on_one(pages, pages_sheet):
     if rotation:
         # From down to up, left to right
         # Also ajust to "one-off issue"
-        placement = list(itertools.product(range(1, cell_x_count+1),
-                                           range(cell_y_count-1, -1, -1)))
+        placement = list(product(range(1, cell_x_count+1),
+                                 range(cell_y_count-1, -1, -1)))
     else:
         # From left to right, up to down
         placement = map(lambda (x, y): (y, x),
-                        list(itertools.product(range(cell_y_count),
-                                               range(cell_x_count))))
+                        list(product(range(cell_y_count),
+                                     range(cell_x_count))))
 
     new_pages = []
 

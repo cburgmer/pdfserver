@@ -16,7 +16,7 @@ See http://cburgmer.nfshost.com/pdfserver/ for an example installation.
 
 Dependencies
 ============
-* Python 2.4, http://www.python.org
+* Python 2.5, http://www.python.org
 * Django (tested with 1.2), http://www.djangoproject.com/
 * pyPdf (tested with 1.12, but needs git~20091021 for "N pages on one"), 
   http://pybrary.net/pyPdf/
