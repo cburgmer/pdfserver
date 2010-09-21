@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-21 17:31+0200\n"
+"POT-Creation-Date: 2010-09-21 17:53+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Christoph Burgmer <cburgmer@ira.uka.de>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -148,7 +148,18 @@ msgstr ""
 "dann lade A zweifach hoch und selektiere zu erst die Seiten am Anfang und "
 "danach die Seiten am Ende getrennt voneinander."
 
-#: templates/main.html:222
+#: templates/main.html:219
+msgid ""
+"Storing several pages on one sheet will only work on a per-document basis. "
+"If you need to merge pages between documents combine the documents first and "
+"then in a second run actually merge pages onto one sheet."
+msgstr ""
+" Das Schreiben von mehreren Seiten auf ein Blatt funktioniert nur jeweils "
+"einzeln je Dokument. Falls du Seiten zwischen mehreren Dokumenten vereinen "
+"willst, dann kombiniere zunächst die Dokumente, um dann in einem zweiten "
+"Gang Seiten auf ein Blatt zu vereinen."
+
+#: templates/main.html:223
 msgid ""
 "<a href=\"http://cburgmer.nfshost.com/pdfserver\">Pdfserver</a> is <a href="
 "\"http://github.com/cburgmer/pdfserver/blob/master/LICENSE\">free and open "
