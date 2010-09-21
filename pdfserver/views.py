@@ -16,6 +16,7 @@ from pyPdf import PdfFileWriter, PdfFileReader
 
 from pdfserver.models import Upload
 from pdfserver.forms import UploadForm
+from pdfserver.util import n_pages_on_one
 
 @csrf_protect
 def main(request):
@@ -169,6 +170,13 @@ def combine_pdfs(request):
         rotate = int(request.POST.get('rotate', '0')) / 90 * 90
     except ValueError:
         rotate = 0
+    try:
+        # make sure value is multiple of 90
+        pages_sheet = int(request.POST.get('pages_sheet', '1'))
+        if not pages_sheet in (1, 2, 4, 6, 9, 16):
+            raise ValueError
+    except ValueError:
+        pages_sheet = 1
 
     overlay = None
     try:
@@ -195,6 +203,7 @@ def combine_pdfs(request):
         pdf_obj = PdfFileReader(file_obj.file)
         page_count = pdf_obj.getNumPages()
 
+        # Get page ranges
         pages = request.POST.get('pages_%d' % item_idx, "")
         page_ranges = []
         if pages:
@@ -221,17 +230,20 @@ def combine_pdfs(request):
             page_ranges = [range(pdf_obj.getNumPages())]
 
         # Extract pages from PDF
+        pages = []
         for page_range in page_ranges:
             for page_idx in page_range:
-                page = pdf_obj.getPage(page_idx)
+                pages.append(pdf_obj.getPage(page_idx))
 
-                # Apply options
-                if rotate:
-                    page = page.rotateClockwise(rotate)
-                if overlay:
-                    page.mergePage(overlay)
+        # Apply operations
+        if pages_sheet > 1 and pages and hasattr(pages[0].mediaBox, 'getWidth'):
+            pages = n_pages_on_one(pages, pages_sheet)
+        if rotate:
+            map(lambda page: page.rotateClockwise(rotate), pages)
+        if overlay:
+            map(lambda page: page.mergePage(overlay), pages)
 
-                output.addPage(page)
+        map(output.addPage, pages)
 
     # TODO get proper file name
     response = HttpResponse(mimetype='application/pdf')

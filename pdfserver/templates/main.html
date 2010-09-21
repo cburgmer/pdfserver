@@ -19,12 +19,12 @@
     );
     $.validator.addMethod(
         "maxpages",
-        function(value, element, param) {       
+        function(value, element, param) {
             // make sure all numbers mentioned are smaller or equal to parameter
             return this.optional(element) || Array.max(value.split(/\D+/g)) <= param;
         },
         "{% trans "There are only maximum {0} pages." %}"
-    );    
+    );
     $(function() {
         $("#files").sortable();
         $(".noselection").disableSelection();
@@ -113,6 +113,19 @@
     <tfoot>
         <tr id="moreoptions">
             <td colspan="6">
+                <span>
+                    {% trans "Pages per sheet" %}<br/>
+                    <span style="display: inline-block;">
+                    <input type="radio" name="pages_sheet" value="1" checked="checked" /> 1<br/>
+                    <input type="radio" name="pages_sheet" value="2"/> 2<br/>
+                    <input type="radio" name="pages_sheet" value="4"/> 4
+                    </span>
+                    <span style="display: inline-block;">
+                    <input type="radio" name="pages_sheet" value="6"/> 6<br/>
+                    <input type="radio" name="pages_sheet" value="9"/> 9<br/>
+                    <input type="radio" name="pages_sheet" value="16"/> 16
+                    </span>
+                </span>
                 <span>
                     {% trans "Rotate clockwise by" %}<br/>
                     <input type="radio" name="rotate" value="0" checked="checked" /> 0°<br/>

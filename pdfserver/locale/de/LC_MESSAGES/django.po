@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-30 17:49+0200\n"
+"POT-Creation-Date: 2010-09-21 17:31+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Christoph Burgmer <cburgmer@ira.uka.de>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgid "PDF server"
 msgstr "PDF-Server"
 
 #: templates/confirm_delete.html:7 templates/confirm_delete_all.html:7
-#: templates/main.html:191
+#: templates/main.html:207
 msgid "Confirm deletion"
 msgstr "Bestätige Löschung"
 
@@ -30,21 +30,21 @@ msgid "Are you sure you want to delete this file?"
 msgstr "Bist du sicher, dass du diese Datei löschen willst?"
 
 #: templates/confirm_delete.html:16 templates/confirm_delete_all.html:16
-#: templates/main.html:105
+#: templates/main.html:106
 msgid "Name"
 msgstr "Name"
 
 #: templates/confirm_delete.html:17 templates/confirm_delete_all.html:17
-#: templates/main.html:106
+#: templates/main.html:107
 msgid "Size"
 msgstr "Größe"
 
 #: templates/confirm_delete.html:18 templates/confirm_delete_all.html:18
-#: templates/main.html:107
+#: templates/main.html:108
 msgid "Pages"
 msgstr "Seiten"
 
-#: templates/confirm_delete_all.html:9 templates/main.html:192
+#: templates/confirm_delete_all.html:9 templates/main.html:208
 msgid "All files will be deleted. Are you sure?"
 msgstr "Alle Dateien werden gelöscht. Bist du sicher?"
 
@@ -52,89 +52,93 @@ msgstr "Alle Dateien werden gelöscht. Bist du sicher?"
 msgid "Delete all"
 msgstr "Alle löschen"
 
-#: templates/confirm_delete_all.html:32 templates/main.html:40
+#: templates/confirm_delete_all.html:32 templates/main.html:41
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: templates/main.html:17
+#: templates/main.html:18
 msgid "Please check your input."
 msgstr "Bitte überprüfe deine Eingabe."
 
-#: templates/main.html:25
+#: templates/main.html:26
 msgid "There are only maximum {0} pages."
 msgstr "Es existieren nur maximal {0} Seiten."
 
-#: templates/main.html:36 templates/main.html.py:187
+#: templates/main.html:37 templates/main.html.py:203
 msgid "Delete all files"
 msgstr "Alle Dateien löschen"
 
-#: templates/main.html:50 templates/main.html.py:185
+#: templates/main.html:51 templates/main.html.py:201
 msgid "Delete"
 msgstr "Löschen"
 
-#: templates/main.html:57
+#: templates/main.html:58
 msgid "All"
 msgstr "Alle"
 
-#: templates/main.html:70
+#: templates/main.html:71
 msgid "More options"
 msgstr "Mehr Optionen"
 
-#: templates/main.html:77
+#: templates/main.html:78
 msgid "Less options"
 msgstr "Weniger Optionen"
 
-#: templates/main.html:90
+#: templates/main.html:91
 msgid "Welcome to pdfserver"
 msgstr "Wilkommen zu pdfserver"
 
-#: templates/main.html:91
+#: templates/main.html:92
 msgid "Upload PDF files, drag them into the right order and recombine pages."
 msgstr ""
 "Lade PDF-Dateien hoch, schiebe sie in die richtige Reihenfolge und "
 "kombiniere Seiten neu."
 
-#: templates/main.html:93
+#: templates/main.html:94
 msgid "PDF files"
 msgstr "PDF-Dateien"
 
-#: templates/main.html:108
+#: templates/main.html:109
 msgid "Optionally select pages (e.g. '1-4, 6, 19-')"
 msgstr "Selektiere wahlweise Seiten (z.B. '1-4, 6, 19-')"
 
 #: templates/main.html:117
+msgid "Pages per sheet"
+msgstr "Seiten pro Blatt"
+
+#: templates/main.html:130
 msgid "Rotate clockwise by"
 msgstr "Drehe im Uhrzeigersinn"
 
-#: templates/main.html:124
+#: templates/main.html:137
 msgid "Insert watermark (e.g. 'DRAFT')"
 msgstr "Füge Wasserzeichen ein (z.B. 'ENTWURF')"
 
-#: templates/main.html:134
+#: templates/main.html:148
 msgid "Combine &amp; open"
 msgstr "Kombinieren &amp; öffnen"
 
-#: templates/main.html:156
+#: templates/main.html:171
 msgid "There are no uploaded files at present."
 msgstr "Es existieren zur Zeit keine hochgeladenen Dateien."
 
-#: templates/main.html:164
+#: templates/main.html:180
 msgid "Upload a new file"
 msgstr "Lade eine neue Datei hoch"
 
-#: templates/main.html:169
+#: templates/main.html:185
 msgid "Upload"
 msgstr "Hochladen"
 
-#: templates/main.html:199
+#: templates/main.html:215
 msgid "Hints"
 msgstr "Hinweise"
 
-#: templates/main.html:201
+#: templates/main.html:217
 msgid "To simply join documents you can leave the page selection empty."
 msgstr "Um einfach zwei Dokumente zu vereinen, lasse die Seitenauswahl leer."
 
-#: templates/main.html:202
+#: templates/main.html:218
 msgid ""
 "If you want to insert pages from a document B into the middle of document A, "
 "upload A twice selecting first the initial and then the final range "
@@ -144,7 +148,7 @@ msgstr ""
 "dann lade A zweifach hoch und selektiere zu erst die Seiten am Anfang und "
 "danach die Seiten am Ende getrennt voneinander."
 
-#: templates/main.html:206
+#: templates/main.html:222
 msgid ""
 "<a href=\"http://cburgmer.nfshost.com/pdfserver\">Pdfserver</a> is <a href="
 "\"http://github.com/cburgmer/pdfserver/blob/master/LICENSE\">free and open "
