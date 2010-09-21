@@ -16,7 +16,7 @@ from pyPdf import PdfFileWriter, PdfFileReader
 
 from pdfserver.models import Upload
 from pdfserver.forms import UploadForm
-from pdfserver.util import n_pages_on_one
+from pdfserver.util import get_overlay_page, n_pages_on_one
 
 @csrf_protect
 def main(request):
@@ -132,27 +132,6 @@ def combine_pdfs(request):
 
         return ((idx, files[idx-1]) for idx in order)
 
-    def write_text_overlay(text, filename):
-        try:
-            from reportlab.platypus import SimpleDocTemplate, Spacer, Paragraph
-            from reportlab.lib import styles, enums, colors, units
-        except ImportError:
-            return None
-
-        styles = styles.getSampleStyleSheet()
-        style = styles["Normal"]
-        style.fontSize = 100
-        style.leading = 110
-        style.alignment = enums.TA_CENTER
-        gray = colors.slategrey
-        gray.alpha = 0.5
-        style.textColor = gray
-
-        doc = SimpleDocTemplate(filename)
-        doc.build([Spacer(1, 3.5 * units.inch), Paragraph(text, style)])
-
-	return filename
-
 
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
@@ -178,21 +157,11 @@ def combine_pdfs(request):
     except ValueError:
         pages_sheet = 1
 
-    overlay = None
-    try:
-        text_overlay = request.POST.get('text_overlay', None)
-        if text_overlay:
-            # create tempfile
-            import tempfile
-            s = tempfile.NamedTemporaryFile()
-            # write pdf overlay with reportpdf
-            write_text_overlay(text_overlay, s.name)
-            # get page object
-            overlay_pdf = PdfFileReader(file(s.name, "rb"))
-            overlay = overlay_pdf.getPage(0)
-            #s.close() TODO
-    except IOError:
-        pass
+    text_overlay = request.POST.get('text_overlay', None)
+    if text_overlay:
+        overlay = get_overlay_page(text_overlay)
+    else:
+        overlay = None
 
     output = PdfFileWriter()
 

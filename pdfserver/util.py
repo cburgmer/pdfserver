@@ -120,3 +120,46 @@ def n_pages_on_one(pages, pages_sheet):
         new_pages.append(new_page)
 
     return new_pages
+
+def write_text_overlay(text, filename):
+    """
+    Writes a PDF file with the given text to be used as an "overlay".
+    """
+    try:
+        from reportlab.platypus import SimpleDocTemplate, Spacer, Paragraph
+        from reportlab.lib import styles, enums, colors, units
+    except ImportError:
+        return None
+
+    styles = styles.getSampleStyleSheet()
+    style = styles["Normal"]
+    style.fontSize = 100
+    style.leading = 110
+    style.alignment = enums.TA_CENTER
+    gray = colors.slategrey
+    gray.alpha = 0.5
+    style.textColor = gray
+
+    doc = SimpleDocTemplate(filename)
+    doc.build([Spacer(1, 3.5 * units.inch), Paragraph(text, style)])
+
+    return filename
+
+def get_overlay_page(text_overlay):
+    try:
+        # Create tempfile
+        import tempfile
+        s = tempfile.NamedTemporaryFile()
+
+        # Write pdf overlay with reportpdf
+        filename = write_text_overlay(text_overlay, s.name)
+        if not filename:
+            return
+
+        # Get page object
+        overlay_pdf = PdfFileReader(file(filename, "rb"))
+        overlay = overlay_pdf.getPage(0)
+
+        return overlay
+    except IOError:
+        pass
