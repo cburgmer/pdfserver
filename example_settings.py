@@ -8,9 +8,8 @@ DEBUG = True
 USE_I18N = True
 USE_L10N = True
 
-# Sessions are needed for referencing files. They are currently not written to and thus not
-#   created. Also, we want to lose the files once gone from the site.
-SESSION_SAVE_EVERY_REQUEST = True;
+# Sessions are needed for referencing files. We want to lose the files once
+# gone from the site.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True;
 
 # Upload parent directory. Uploads will go to UPLOAD_TO/uploads

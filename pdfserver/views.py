@@ -6,10 +6,9 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.forms.models import save_instance
 from django.http import (HttpResponse, HttpResponseRedirect,
-                         HttpResponseNotAllowed)
+                         HttpResponseNotAllowed, Http404)
 from django.views.decorators.csrf import csrf_protect
 from django.template import RequestContext
-from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
 
 from pyPdf import PdfFileWriter, PdfFileReader
@@ -18,14 +17,25 @@ from pdfserver.models import Upload
 from pdfserver.forms import UploadForm
 from pdfserver.util import get_overlay_page, n_pages_on_one
 
+def _get_upload(request):
+    try:
+        id = int(request.POST.get('id', None))
+    except ValueError:
+        raise Http404()
+
+    file_ids = request.session.get('file_ids', [])
+    if id not in file_ids:
+        raise Http404()
+
+    return get_object_or_404(Upload, id=id)
+
+def _get_uploads(request):
+    file_ids = request.session.get('file_ids', [])
+    return Upload.objects.filter(id__in=file_ids)
+
 @csrf_protect
 def main(request):
-    # session might not exist yet
-    try:
-        session = Session.objects.get(session_key=request.session.session_key)
-        files = Upload.objects.filter(session=session)
-    except ObjectDoesNotExist:
-        files = []
+    files = _get_uploads(request)
 
     response = render_to_response('main.html',
                                 {
@@ -46,11 +56,6 @@ def upload_file(request):
             logging.info("Upload form is valid: %s" % form)
             upload = Upload()
 
-            # link to session
-            session = Session.objects.get(
-                session_key=request.session.session_key)
-            upload.session = session
-
             file_obj = form.files['file']
             # save original name
             upload.filename = file_obj.name
@@ -66,6 +71,11 @@ def upload_file(request):
 
             save_instance(form, upload)
 
+            # link to session
+            file_ids = request.session.get('file_ids', [])
+            file_ids.append(upload.id)
+            request.session['file_ids'] = file_ids
+
             logging.info("Saved upload: %s" % upload)
         else:
             logging.error("invalid form: %s" % form)
@@ -78,7 +88,7 @@ def upload_file(request):
     #if request.method != 'POST':
         #return HttpResponseNotAllowed(['POST'])
 
-    #upload = get_object_or_404(Upload, id=request.POST.get('id', None))
+    #upload = _get_upload(request)
     #return render_to_response('confirm_delete.html', {'upload': upload},
                               #RequestContext(request))
 
@@ -88,7 +98,7 @@ def delete(request):
         return HttpResponseNotAllowed(['POST'])
 
     if request.POST.get('delete', False):
-        upload = get_object_or_404(Upload, id=request.POST.get('id', None))
+        upload = _get_upload(request)
 
         upload.file.delete()
         upload.delete()
@@ -100,8 +110,7 @@ def confirm_delete_all(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
-    session = Session.objects.get(session_key=request.session.session_key)
-    files = Upload.objects.filter(session=session)
+    files = _get_uploads(request)
     return render_to_response('confirm_delete_all.html', {'uploads': files},
                               RequestContext(request))
 
@@ -111,8 +120,7 @@ def delete_all(request):
         return HttpResponseNotAllowed(['POST'])
 
     if request.POST.get('delete', False):
-        session = Session.objects.get(session_key=request.session.session_key)
-        files = Upload.objects.filter(session=session)
+        files = _get_uploads(request)
 
         for upload in files:
             upload.file.delete()
@@ -136,8 +144,7 @@ def combine_pdfs(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
-    session = Session.objects.get(session_key=request.session.session_key)
-    files = Upload.objects.filter(session=session)
+    files = _get_uploads(request)
 
     # If user clicked on button but no files were uploaded
     if not files:
