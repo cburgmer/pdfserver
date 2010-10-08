@@ -1,14 +1,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-{% load i18n %}
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
-<link type="text/css" href="{{MEDIA_URL}}css/jquery-ui.css" rel="stylesheet" />
-<link type="text/css" href="{{MEDIA_URL}}css/pdfserver.css" rel="stylesheet" />
-<script type="text/javascript" src="{{MEDIA_URL}}js/jquery.js"></script>
-<script type="text/javascript" src="{{MEDIA_URL}}js/jquery-ui.js"></script>
-<script type="text/javascript" src="{{MEDIA_URL}}js/jquery.validate.min.js"></script>
-<title>{% trans "PDF server" %}</title>
+<link type="text/css" href="static/css/jquery-ui.css" rel="stylesheet" />
+<link type="text/css" href="static/css/pdfserver.css" rel="stylesheet" />
+<script type="text/javascript" src="static/js/jquery.js"></script>
+<script type="text/javascript" src="static/js/jquery-ui.js"></script>
+<script type="text/javascript" src="static/js/jquery.validate.min.js"></script>
+<title>{{ _("PDF server") }}</title>
 </head>
 <body>
 <div id="content">{% block content %}{% endblock %}</div>

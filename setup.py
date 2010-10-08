@@ -1,10 +1,10 @@
-import ez_setup
-ez_setup.use_setuptools()
+from distribute_setup import use_setuptools
+use_setuptools()
 from setuptools import setup, find_packages
 
 setup(
-    name = "django-pdfserver",
-    version = "0.2.1",
+    name = "pdfserver",
+    version = "0.3",
     packages = ['pdfserver'],
     author = "Christoph Burgmer",
     author_email = "cburgmer@ira.uka.de",
@@ -13,7 +13,12 @@ setup(
     url = "http://cburgmer.nfshost.com/pdfserver/",
     package_data = {'pdfserver': ['templates/*.html', 'locale/*/*.mo', 'locale/*/*.po',
                                   'media/css/*.css', 'media/css/images/*','media/js/*.js']},
-    install_requires=['pyPdf >= 1.12', 'Django >= 1.0'],
+    install_requires=['pyPdf >= 1.12', 'Flask', 'Flask-Babel', 'SQLAlchemy'],
+    dependency_links = ['git+git://github.com/mfenniak/pyPdf#egg=pyPdf'],
+    extras_require = {
+        'watermarks': ['python-reportlab'],
+        'npagesonone': ['pyPdf > 1.12'],
+    },
     classifiers = [
     	"Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

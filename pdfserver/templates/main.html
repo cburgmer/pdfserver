@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load i18n %}
 {% block content %}
 <script type="text/javascript">
 //<![CDATA[
@@ -15,7 +14,7 @@
             // accept combinations of "1-10", "-10", "1-" separated by "," or ";" or "/" but no single "0"
             return this.optional(element) || /^\s*(\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+)(\s*[;,\/]\s*(\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+))*\s*$/.test(value) && 0 < Array.min(value.split(/\D+/g));
         },
-        "{% trans "Please check your input." %}"
+        "{{ _("Please check your input.") }}"
     );
     $.validator.addMethod(
         "maxpages",
@@ -23,7 +22,7 @@
             // make sure all numbers mentioned are smaller or equal to parameter
             return this.optional(element) || Array.max(value.split(/\D+/g)) <= param;
         },
-        "{% trans "There are only maximum {0} pages." %}"
+        "{{ _("There are only maximum {0} pages.") }}"
     );
     $(function() {
         $("#files").sortable();
@@ -34,11 +33,11 @@
             resizable: false,
             modal: true,
             buttons: {
-                '{% trans "Delete all files" %}': function() {
+                '{{ _("Delete all files") }}': function() {
                     document.forms['deleteall'].submit();
                     $(this).dialog('close');
                 },
-                '{% trans "Cancel" %}': function() {
+                '{{ _("Cancel") }}': function() {
                     $(this).dialog('close');
                 }
             }
@@ -48,14 +47,14 @@
             icons: {
                 primary: 'ui-icon-circle-close',
             },
-            label: "{% trans "Delete" %}",
+            label: "{{ _("Delete") }}",
             text: false,
         });
         $(".deleteallbutton").button({
             icons: {
                 primary: 'ui-icon-circle-close',
             },
-            label: "{% trans "All" %}",
+            label: "{{ _("All") }}",
             text: true,
         });
         $("#combinebutton").button({
@@ -68,14 +67,14 @@
             icons: {
                 primary: 'ui-icon-circlesmall-plus'
             },
-            label: "{% trans "More options" %}",
+            label: "{{ _("More options") }}",
             text: true
         });
         $("#lessoptionsbutton").button({
             icons: {
                 primary: 'ui-icon-circlesmall-minus'
             },
-            label: "{% trans "Less options" %}",
+            label: "{{ _("Less options") }}",
             text: true
         });
         $("#uploadbutton").button({
@@ -88,25 +87,20 @@
     });
 //]]>
 </script>
-<h1>{% trans "Welcome to pdfserver" %}</h1>
-<p>{% trans "Upload PDF files, drag them into the right order and recombine pages." %}</p>
+<h1>{{ _("Welcome to pdfserver") }}</h1>
+<p>{{ _("Upload PDF files, drag them into the right order and recombine pages.") }}</p>
 
-<h3>{% trans "PDF files" %}</h3>
-{% if form.errors %}
-<p>
-{{form.errors}}
-</p>
-{% endif %}
-<form action="{% url combine_pdfs %}" id="filesform" name="combine" method="post" onsubmit="document.forms['combine'].elements['order'].value = $('#files').sortable('serialize'); return true">{% csrf_token %}
+<h3>{{ _("PDF files") }}</h3>
+<form action="{{ url_for('combine_pdfs') }}" id="filesform" name="combine" method="post" onsubmit="document.forms['combine'].elements['order'].value = $('#files').sortable('serialize'); return true">
 <input type="hidden" name="order" value=""/>
 <table id="filetable">
     <thead>
     <tr>
         <th style="width: 20px;"></th>
-        <th>{% trans "Name" %}</th>
-        <th style="width: 80px;">{% trans "Size" %}</th>
-        <th style="width: 40px;">{% trans "Pages" %}</th>
-        <th style="width: 180px;"><span style="font-style:italic;">{% trans "Optionally select pages (e.g. '1-4, 6, 19-')" %}</span></th>
+        <th>{{ _("Name") }}</th>
+        <th style="width: 80px;">{{ _("Size") }}</th>
+        <th style="width: 40px;">{{ _("Pages") }}</th>
+        <th style="width: 180px;"><span style="font-style:italic;">{{ _("Optionally select pages (e.g. '1-4, 6, 19-')") }}</span></th>
         <th style="width: 40px;"></th>
     </tr>
     </thead>
@@ -114,7 +108,7 @@
         <tr id="moreoptions">
             <td colspan="6">
                 <span>
-                    {% trans "Pages per sheet" %}<br/>
+                    {{ _("Pages per sheet") }}<br/>
                     <span style="display: inline-block;">
                     <input type="radio" name="pages_sheet" value="1" checked="checked" /> 1<br/>
                     <input type="radio" name="pages_sheet" value="2"/> 2<br/>
@@ -127,14 +121,14 @@
                     </span>
                 </span>
                 <span>
-                    {% trans "Rotate clockwise by" %}<br/>
+                    {{ _("Rotate clockwise by") }}<br/>
                     <input type="radio" name="rotate" value="0" checked="checked" /> 0°<br/>
                     <input type="radio" name="rotate" value="90"/> 90°<br/>
                     <input type="radio" name="rotate" value="180"/> 180°<br/>
                     <input type="radio" name="rotate" value="270"/> 270°
                 </span>
                 <span>
-                    {% trans "Insert watermark (e.g. 'DRAFT')" %}<br/>
+                    {{ _("Insert watermark (e.g. 'DRAFT')") }}<br/>
                     <input type="text" name="text_overlay"/>
                 </span>
             </td>
@@ -145,7 +139,7 @@
             <a href="#" style="display: none;" id="lessoptionsbutton" onclick="$('#moreoptions').fadeOut();$('#lessoptionsbutton').hide();$('#moreoptionsbutton').show();"></a>
             </span></td>
             <td colspan="3" style="text-align: right;"><span style="font-size: 1.1em;">
-            <button type="submit" id="combinebutton"{% if uploads %}{% else %} onclick="return false"{% endif %}>{% trans "Combine &amp; open" %}</button>
+            <button type="submit" id="combinebutton"{% if uploads %}{% else %} onclick="return false"{% endif %}>{{ _("Combine &amp; open") }}</button>
             </span></td>
             <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton"{% if uploads %} onclick="$('#deleteall').dialog('open'); return false"{% else %} onclick="return false"{% endif %}></a></span></td>
         </tr>
@@ -153,22 +147,22 @@
     {% if uploads %}
     <tbody id="files">
     {% for upload in uploads %}
-        <tr class="{% cycle 'even' 'odd' %}" id="file_{{ forloop.counter }}">
+        <tr class="{{ loop.cycle('odd', 'even') }}" id="file_{{ loop.index }}">
             <td><span class="noselection ui-icon ui-icon-arrowthick-2-n-s"></span></td>
             <td><span class="noselection text">{{upload.filename}}</span></td>
-            <td><span class="noselection text">{{upload.file.size|filesizeformat}}</span></td>
+            <td><span class="noselection text">{% if upload.size %}{{upload.size|filesizeformat}}{% endif %}</span></td>
             <td style="text-align: right;"><span class="noselection text">{{upload.page_count}}</span></td>
-            <td><input type="text" class="pageranges" name="pages_{{ forloop.counter }}" id="pages_{{ forloop.counter }}"/>
-            <script type="text/javascript">$(function() {$("#pages_{{ forloop.counter }}").rules("add", {maxpages: {{upload.page_count}} })});</script>
+            <td><input type="text" class="pageranges" name="pages_{{ loop.index }}" id="pages_{{ loop.index }}"/>
+            <script type="text/javascript">$(function() {$("#pages_{{ loop.index }}").rules("add", {maxpages: {{upload.page_count}} })});</script>
             </td>
-            <td style="text-align: right;"><a class="deletebutton" id="deleteanchor_{{ forloop.counter }}" href="#" onclick="document.forms['deletefile_{{ forloop.counter }}'].submit(); return false"></a></td>
+            <td style="text-align: right;"><a class="deletebutton" id="deleteanchor_{{ loop.index }}" href="#" onclick="document.forms['deletefile_{{ loop.index }}'].submit(); return false"></a></td>
         </tr>
     {% endfor %}
     </tbody>
     {% else %}
     <tbody>
         <tr>
-            <td colspan="6"><span style="font-style:italic;">{% trans "There are no uploaded files at present." %}</span></td>
+            <td colspan="6"><span style="font-style:italic;">{{ _("There are no uploaded files at present.") }}</span></td>
         </tr>
     </tbody>
     {% endif %}
@@ -176,19 +170,16 @@
 <script type="text/javascript">$('#moreoptions').hide();</script>
 </form>
 <div id="upload">
-    <form action="{% url upload %}" method="post" enctype="multipart/form-data" accept-charset="utf-8">{% csrf_token %}
-        <h3>{% trans "Upload a new file" %}</h3>
-        {{form.file}}
-        {% if form.file.errors %}
-            {{form.file.errors}}
-        {% endif %}
-        <button type="submit" id="uploadbutton">{% trans "Upload" %}</button>
+    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+        <h3>{{ _("Upload a new file") }}</h3>
+        <input type="file" name="file" id="id_file" />
+        <button type="submit" id="uploadbutton">{{ _("Upload") }}</button>
     </form>
 </div>
 {% if uploads %}
 <!-- HTML wouldn't allow us to place a form inside a form, so put basis here and call by Javascript -->
 {% for upload in uploads %}
-    <form action="{% url delete %}" method="post" name="deletefile_{{ forloop.counter }}">{% csrf_token %}
+    <form action="{{ url_for('delete') }}" method="post" name="deletefile_{{ loop.index }}">
         <input type="hidden" name="id" value="{{upload.id}}"/>
         <input type="hidden" name="delete" value="Delete"/>
     </form>
@@ -198,29 +189,29 @@
 <noscript>
 <!-- Allow at least deletion of all files if Javascript isn't around -->
 <div>
-    <h3>{% trans "Delete" %}</h3>
-    <form action="{% url confirm_delete_all %}" method="post">{% csrf_token %}
-        <input type="submit" value="{% trans "Delete all files" %}"/>
+    <h3>{{ _("Delete") }}</h3>
+    <form action="{{ url_for('confirm_delete_all') }}" method="post">
+        <input type="submit" value="{{ _("Delete all files") }}"/>
     </form>
 </div>
 </noscript>
-<div id="deleteall" title="{% trans "Confirm deletion" %}">
-        <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>{% trans "All files will be deleted. Are you sure?" %}</p>
-        <form action="{% url delete_all %}" name="deleteall" method="post">{% csrf_token %}
+<div id="deleteall" title="{{ _("Confirm deletion") }}">
+        <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>{{ _("All files will be deleted. Are you sure?") }}</p>
+        <form action="{{ url_for('delete_all') }}" name="deleteall" method="post">
         <input type="hidden" name="delete" value="Delete all"/>
         </form>
 </div>
 
 <div style="margin-top: 30px;">
-<h3>{% trans "Hints" %}</h3>
+<h3>{{ _("Hints") }}</h3>
 <ul>
-<li>{% trans "To simply join documents you can leave the page selection empty." %}</li>
-<li>{% trans "If you want to insert pages from a document B into the middle of document A, upload A twice selecting first the initial and then the final range separately." %}</li>
-<li>{% trans "Storing several pages on one sheet will only work on a per-document basis. If you need to merge pages between documents combine the documents first and then in a second run actually merge pages onto one sheet." %}</li>
+<li>{{ _("To simply join documents you can leave the page selection empty.") }}</li>
+<li>{{ _("If you want to insert pages from a document B into the middle of document A, upload A twice selecting first the initial and then the final range separately.") }}</li>
+<li>{{ _("Storing several pages on one sheet will only work on a per-document basis. If you need to merge pages between documents combine the documents first and then in a second run actually merge pages onto one sheet.") }}</li>
 </ul>
 </div>
 
-<div style="width: 100%" class="footer">{% blocktrans %}<a href="http://cburgmer.nfshost.com/pdfserver">Pdfserver</a> is <a href="http://github.com/cburgmer/pdfserver/blob/master/LICENSE">free and open source software</a> and is available from <a href="http://github.com/cburgmer/pdfserver">Github</a>.{% endblocktrans %}
+<div style="width: 100%" class="footer">{% trans %}<a href="http://cburgmer.nfshost.com/pdfserver">Pdfserver</a> is <a href="http://github.com/cburgmer/pdfserver/blob/master/LICENSE">free and open source software</a> and is available from <a href="http://github.com/cburgmer/pdfserver">Github</a>.{% endtrans %}
 <div style="float: right;"><a href="http://validator.w3.org/check?uri=referer"><img style="border: 0 none;" src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0 Transitional" height="31" width="88"/></a></div>
 </div>
 {% endblock %}

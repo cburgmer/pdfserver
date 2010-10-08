@@ -1,6 +1,6 @@
 Pdfserver is a webservice that offers common PDF operations like joining
-documents or selecting pages. It is based on Django and depends on pyPdf to
-manipulate PDFs.
+documents or selecting pages. It is based on the Python based microframework
+Flask and depends on pyPdf to manipulate PDFs.
 
 Rationale
 =========
@@ -17,7 +17,9 @@ See http://cburgmer.nfshost.com/pdfserver/ for an example installation.
 Dependencies
 ============
 * Python 2.5, http://www.python.org
-* Django (tested with 1.2), http://www.djangoproject.com/
+* Flask (tested on 0.6), http://flask.pocoo.org/
+* Flask-Babel, http://packages.python.org/Flask-Babel/
+* SQLAlchemy (probably >= 0.6.0), http://www.sqlalchemy.org/
 * pyPdf (tested with 1.12, but needs git~20091021 for "N pages on one"), 
   http://pybrary.net/pyPdf/
 
@@ -36,44 +38,55 @@ Already included
 
 Features
 ========
-- Simple, yet powerful
-- Designed to work with&without Javascript
-- N pages on one
-- Joining of files
-- Selecting pages & page ranges
-- Rotate pages
-- Add watermark to pages
+* Simple, yet powerful
+* Designed to work with&without Javascript
+* N pages on one
+* Joining of files
+* Selecting pages & page ranges
+* Rotate pages
+* Add watermark to pages
+
+Changes
+=======
+0.3
+
+* "N pages on one" feature
+* Move to Flask from Django
+
+0.2.1
+
+* Page rotation
+* Watermark feature
+* Page range validation
 
 Deploy
 ======
-You can install this application with::
+Install this application with::
 
     $ python setup.py install pdfserver
 
-To start a project around pdfserver run the following steps:
+You can simply run the development server with::
 
-1. Create a new project::
+    $ python run.py createdb
+    $ mkdir uploads
+    $ python run.py
 
-    $ django-admin startproject myserver
-  
-2. Edit settings to fit pdfserver's needs (``myserver/settings.py``) following
-   the example in ``example_settings.py``. Choose ``sqlite3`` for the database 
-   if in doubt.
+General
+-------
 
-3. Create the database::
+1. Make sure the given upload directory and database can be written to and are
+   not accessible from the outside (if on a public server).
 
-    $ cd myserver
-    $ python manage.py syncdb
+2. When not in debug mode make sure to serve static files under ``static``.
 
-4. Make sure the given upload directory can be written to and not accessible 
-   from the outside (if on a public server).
+3. Give a ``SECRET_KEY`` and keep it secret so that sessions can be signed and
+   users cannot see files uploaded by others.
 
-5. For a test installation you can run::
+Serve as CGI
+------------
 
-    $ python manage.py runserver
-
-When not in debug mode make sure to serve static files under ``media/js/*``
-and ``media/css/*``.
+See pdfserver.cgi for an example on how to run pdfserver through the
+traditional CGI interface.
 
 Contact
 =======

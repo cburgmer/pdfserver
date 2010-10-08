@@ -13,6 +13,8 @@ except ImportError:
 from pyPdf import PdfFileWriter, PdfFileReader
 from pyPdf.pdf import PageObject
 
+from pdfserver import app
+
 def lower_divisor_iterator(value):
     """
     Iterates over all divisors of the given value smaller or equal to the
@@ -136,6 +138,7 @@ def write_text_overlay(text, filename):
         from reportlab.platypus import SimpleDocTemplate, Spacer, Paragraph
         from reportlab.lib import styles, enums, colors, units
     except ImportError:
+        app.logger.debug("No report lab found, not generating text overlay")
         return None
 
     styles = styles.getSampleStyleSheet()
@@ -168,5 +171,28 @@ def get_overlay_page(text_overlay):
         overlay = overlay_pdf.getPage(0)
 
         return overlay
-    except IOError:
+    except IOError, e:
+        app.logger.debug("IOError generating text overlay: %s" % e)
         pass
+
+
+from functools import wraps
+from flask import render_template
+
+# from http://flask.pocoo.org/docs/patterns/viewdecorators/#templating-decorator
+def templated(template=None):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            template_name = template
+            if template_name is None:
+                template_name = request.endpoint \
+                    .replace('.', '/') + '.html'
+            ctx = f(*args, **kwargs)
+            if ctx is None:
+                ctx = {}
+            elif not isinstance(ctx, dict):
+                return ctx
+            return render_template(template_name, **ctx)
+        return decorated_function
+    return decorator

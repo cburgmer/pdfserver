@@ -1,135 +1,113 @@
 # -*- coding: utf-8 -*-
-import logging
 import re
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 
-from django.shortcuts import render_to_response, get_object_or_404
-from django.core.urlresolvers import reverse
-from django.forms.models import save_instance
-from django.http import (HttpResponse, HttpResponseRedirect,
-                         HttpResponseNotAllowed, Http404)
-from django.views.decorators.csrf import csrf_protect
-from django.template import RequestContext
-from django.core.exceptions import ObjectDoesNotExist
+from flask import g, request, Response, session
+from flask import abort, redirect, url_for
+from werkzeug import wrap_file
 
 from pyPdf import PdfFileWriter, PdfFileReader
 
+from pdfserver import app, babel
 from pdfserver.models import Upload
-from pdfserver.forms import UploadForm
-from pdfserver.util import get_overlay_page, n_pages_on_one
+from pdfserver.util import get_overlay_page, n_pages_on_one, templated
 
-def _get_upload(request):
+@babel.localeselector
+def get_locale():
+    # Get language from the user accept header the browser transmits.
+    return request.accept_languages.best_match(
+                                        app.config['SUPPORTED_TRANSLATIONS'])
+
+def _get_upload():
     try:
-        id = int(request.POST.get('id', None))
+        id = int(request.form.get('id', None))
     except ValueError:
-        raise Http404()
+        raise abort(404)
 
-    file_ids = request.session.get('file_ids', [])
+    file_ids = session.get('file_ids', [])
     if id not in file_ids:
-        raise Http404()
+        raise abort(404)
 
-    return get_object_or_404(Upload, id=id)
+    upload = Upload.get_for_id(id)
+    if upload:
+        return upload
+    else:
+        raise abort(404)
 
-def _get_uploads(request):
-    file_ids = request.session.get('file_ids', [])
-    return Upload.objects.filter(id__in=file_ids)
+def _get_uploads():
+    file_ids = session.get('file_ids', [])
+    return Upload.get_for_ids(file_ids)
 
-@csrf_protect
-def main(request):
-    files = _get_uploads(request)
+@app.route('/')
+@templated('main.html')
+def main():
+    files = _get_uploads()
+    return {'uploads': files}
 
-    response = render_to_response('main.html',
-                                {
-                                 'uploads': files,
-                                 'form': UploadForm(),
-                                },
-                                context_instance=RequestContext(request))
-    if files:
-        response['Cache-Control'] = 'no-cache'
-        # TODO response['Expires'] = 
-    return response
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' in request.files and request.files['file']:
+        app.logger.info("Upload form is valid")
+        upload = Upload()
 
-def upload_file(request):
-    if request.method == 'POST':
-        form = UploadForm(request.POST, request.FILES)
+        # save original name
+        upload.store_file(request.files['file'])
 
-        if form.is_valid():
-            logging.info("Upload form is valid: %s" % form)
-            upload = Upload()
+        Upload.add(upload)
+        Upload.commit()
 
-            file_obj = form.files['file']
-            # save original name
-            upload.filename = file_obj.name
+        # link to session
+        file_ids = session.get('file_ids', [])
+        file_ids.append(upload.id)
+        session['file_ids'] = file_ids
 
-            # save pdf page count
-            try:
-                file_obj.open('r')
-                pdf_obj = PdfFileReader(file_obj)
-                upload.page_count = pdf_obj.getNumPages()
-                file_obj.close()
-            except Exception, e:
-                pass
+        app.logger.info("Saved upload: %s" % upload)
+    else:
+        app.logger.error("No file specified")
 
-            save_instance(form, upload)
+    return redirect(url_for('main'))
 
-            # link to session
-            file_ids = request.session.get('file_ids', [])
-            file_ids.append(upload.id)
-            request.session['file_ids'] = file_ids
+#@app.route('/confirmdelete', methods=['POST'])
+#@templated('confirm_delete.html')
+#def confirm_delete():
+    #files = _get_uploads()
+    #return {'uploads': files}
 
-            logging.info("Saved upload: %s" % upload)
-        else:
-            logging.error("invalid form: %s" % form)
-            logging.error("form errors: %s" % form.errors)
+@app.route('/delete', methods=['POST'])
+def delete():
+    if request.form.get('delete', False):
+        upload = _get_upload()
 
-    return HttpResponseRedirect(reverse('uploads'))
+        session['file_ids'].remove(upload.id)
+        session.modified = True
+        Upload.delete(upload)
+        Upload.commit()
 
-#@csrf_protect
-#def confirm_delete(request):
-    #if request.method != 'POST':
-        #return HttpResponseNotAllowed(['POST'])
+    return redirect(url_for('main'))
 
-    #upload = _get_upload(request)
-    #return render_to_response('confirm_delete.html', {'upload': upload},
-                              #RequestContext(request))
+@app.route('/confirmdelete/all', methods=['POST'])
+@templated('confirm_delete_all.html')
+def confirm_delete_all():
+    files = _get_uploads()
+    return {'uploads': files}
 
-@csrf_protect
-def delete(request):
-    if request.method != 'POST':
-        return HttpResponseNotAllowed(['POST'])
+@app.route('/deleteall', methods=['POST'])
+def delete_all():
+    if request.form.get('delete', False):
+        files = _get_uploads()
 
-    if request.POST.get('delete', False):
-        upload = _get_upload(request)
-
-        upload.file.delete()
-        upload.delete()
-
-    return HttpResponseRedirect(reverse('uploads'))
-
-@csrf_protect
-def confirm_delete_all(request):
-    if request.method != 'POST':
-        return HttpResponseNotAllowed(['POST'])
-
-    files = _get_uploads(request)
-    return render_to_response('confirm_delete_all.html', {'uploads': files},
-                              RequestContext(request))
-
-@csrf_protect
-def delete_all(request):
-    if request.method != 'POST':
-        return HttpResponseNotAllowed(['POST'])
-
-    if request.POST.get('delete', False):
-        files = _get_uploads(request)
-
+        session['file_ids'] = []
         for upload in files:
-            upload.file.delete()
-            upload.delete()
+            Upload.delete(upload)
+        Upload.commit()
 
-    return HttpResponseRedirect(reverse('uploads'))
+    return redirect(url_for('main'))
 
-@csrf_protect
-def combine_pdfs(request):
+@app.route('/combine', methods=['POST'])
+def combine_pdfs():
 
     def order_files(files, order):
         order = map(int, re.findall(r'\d+', order))
@@ -140,47 +118,46 @@ def combine_pdfs(request):
 
         return ((idx, files[idx-1]) for idx in order)
 
-
-    if request.method != 'POST':
-        return HttpResponseNotAllowed(['POST'])
-
-    files = _get_uploads(request)
+    files = _get_uploads()
 
     # If user clicked on button but no files were uploaded
     if not files:
-        return HttpResponseRedirect(reverse('uploads'))
+        return redirect(url_for('main'))
 
     # Get options
     try:
         # make sure value is multiple of 90
-        rotate = int(request.POST.get('rotate', '0')) / 90 * 90
+        rotate = int(request.form.get('rotate', '0')) / 90 * 90
     except ValueError:
         rotate = 0
     try:
         # make sure value is multiple of 90
-        pages_sheet = int(request.POST.get('pages_sheet', '1'))
+        pages_sheet = int(request.form.get('pages_sheet', '1'))
         if not pages_sheet in (1, 2, 4, 6, 9, 16):
             raise ValueError
     except ValueError:
         pages_sheet = 1
 
-    text_overlay = request.POST.get('text_overlay', None)
+    text_overlay = request.form.get('text_overlay', None)
     if text_overlay:
         overlay = get_overlay_page(text_overlay)
     else:
         overlay = None
 
+    app.logger.debug(u"Parameters: %d pages on one, rotate %d°, text overlay %r"
+                     % (pages_sheet, rotate, text_overlay))
+
     output = PdfFileWriter()
 
     # Get pdf objects and arrange in the user selected order, then parse ranges
-    order = request.POST.get('order', "")
-    for item_idx, file_obj in order_files(files, order):
-        file_obj.file.open('r')
-        pdf_obj = PdfFileReader(file_obj.file)
+    order = request.form.get('order', "")
+    for item_idx, upload in order_files(files, order):
+        f = upload.get_file()
+        pdf_obj = PdfFileReader(f)
         page_count = pdf_obj.getNumPages()
 
         # Get page ranges
-        pages = request.POST.get('pages_%d' % item_idx, "")
+        pages = request.form.get('pages_%d' % item_idx, "")
         page_ranges = []
         if pages:
             ranges = re.findall(r'\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+', pages)
@@ -214,7 +191,10 @@ def combine_pdfs(request):
         # Apply operations
         if pages_sheet > 1 and pages and hasattr(pages[0].mediaBox, 'getWidth'):
             pages = n_pages_on_one(pages, pages_sheet)
+        elif pages_sheet > 1 and not hasattr(pages[0].mediaBox, 'getWidth'):
+            app.logger.debug("pyPdf too old, not merging pages onto one")
         if rotate:
+            app.logger.debug("rotate, clockwise, %r " % rotate)
             map(lambda page: page.rotateClockwise(rotate), pages)
         if overlay:
             map(lambda page: page.mergePage(overlay), pages)
@@ -222,9 +202,14 @@ def combine_pdfs(request):
         map(output.addPage, pages)
 
     # TODO get proper file name
-    response = HttpResponse(mimetype='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename=combined.pdf'
+    response = Response(content_type='application/pdf')
+    response.headers.add('Content-Disposition',
+                         'attachment; filename=combined.pdf')
 
-    output.write(response)
+    buffer = StringIO()
+    output.write(buffer)
+    response.data = buffer.getvalue()
+
+    app.logger.debug("Wrote %d bytes" % len(response.data))
 
     return response

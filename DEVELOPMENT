@@ -3,14 +3,14 @@ Translations
 See <http://docs.djangoproject.com/en/dev/topics/i18n/localization>.
 
 Create a new set of translations:
-    $ cd pdfserver
-    $ django-admin.py makemessages -l en_GB
+    $ pybabel extract -F babel.cfg -o messages.pot
+    $ pybabel init -i messages.pot -d pdfserver/translations -l en_GB
 
 Re-examine all sources and update translations:
-    $ django-admin makemessages -a
+    $ pybabel update -i messages.pot -d pdfserver/translations
 
 Compile catalogues:
-    $ django-admin compilemessages
+    $ pybabel compile -d pdfserver/translations
 
 
 Updating jQuery
