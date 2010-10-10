@@ -12,7 +12,7 @@
         "pageranges",
         function(value, element) {
             // accept combinations of "1-10", "-10", "1-" separated by "," or ";" or "/" but no single "0"
-            return this.optional(element) || /^\s*(\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+)(\s*[;,\/]\s*(\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+))*\s*$/.test(value) && 0 < Array.min(value.split(/\D+/g));
+            return this.optional(element) || /^\s*(\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+)(\s*[;,\/]\s*(\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+))*\s*$/.test(value) && 0 < Array.min(value.match(/\d+/g));
         },
         "{{ _("Please check your input.") }}"
     );
@@ -20,7 +20,7 @@
         "maxpages",
         function(value, element, param) {
             // make sure all numbers mentioned are smaller or equal to parameter
-            return this.optional(element) || Array.max(value.split(/\D+/g)) <= param;
+            return this.optional(element) || Array.max(value.match(/\d+/g)) <= param;
         },
         "{{ _("There are only maximum {0} pages.") }}"
     );
