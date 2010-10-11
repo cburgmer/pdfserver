@@ -8,7 +8,7 @@ if __name__ == '__main__':
         if len(sys.argv) == 2 and sys.argv[1] == 'createdb':
             print "Creating database...",
 
-            from pdfserver import database
+            from pdfserver import models, database
             database.init_db()
 
             print "done"

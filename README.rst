@@ -1,6 +1,6 @@
 Pdfserver is a webservice that offers common PDF operations like joining
-documents or selecting pages. It is based on the Python based microframework
-Flask and depends on pyPdf to manipulate PDFs.
+documents, selecting pages or "n pages on one". It is built on top of the
+Python based microframework Flask and depends on pyPdf to manipulate PDFs.
 
 Rationale
 =========
@@ -86,6 +86,10 @@ General
 
 3. Give a ``SECRET_KEY`` and keep it secret so that sessions can be signed and
    users cannot see files uploaded by others.
+
+4. Create the database by running in Python::
+
+    >>> from pdfserver import models, database; database.init_db()
 
 Serve as CGI
 ------------
