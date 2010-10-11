@@ -3,7 +3,7 @@ Translations
 See <http://docs.djangoproject.com/en/dev/topics/i18n/localization>.
 
 Create a new set of translations:
-    $ pybabel extract -F babel.cfg -o messages.pot
+    $ pybabel extract -F babel.cfg -o messages.pot pdfserver
     $ pybabel init -i messages.pot -d pdfserver/translations -l en_GB
 
 Re-examine all sources and update translations:
