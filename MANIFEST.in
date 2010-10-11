@@ -8,6 +8,6 @@ include *.py
 include pdfserver.cgi
 include babel.cfg
 include README.rst
-include DEVELOPEMENT
+include DEVELOPMENT
 include LICENSE
 include TODO

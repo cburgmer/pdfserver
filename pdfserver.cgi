@@ -1,4 +1,11 @@
 #!/usr/bin/python
+import os
+
+## Include modules from the virtualenv (in same directory) with this runner
+#activate_this = os.path.join(os.path.dirname(__file__), 
+#                             'virtualenv/bin/activate_this.py')
+#execfile(activate_this, dict(__file__=activate_this))
+
 from wsgiref.handlers import CGIHandler
 from pdfserver import app
 
