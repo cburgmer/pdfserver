@@ -12,7 +12,7 @@ from werkzeug import wrap_file
 from pyPdf import PdfFileWriter, PdfFileReader
 
 from pdfserver import app, babel
-from pdfserver.models import Upload
+Upload = __import__(app.config['MODELS'], fromlist='Upload').Upload
 from pdfserver.util import get_overlay_page, n_pages_on_one, templated
 
 @babel.localeselector
@@ -22,32 +22,37 @@ def get_locale():
                                         app.config['SUPPORTED_TRANSLATIONS'])
 
 def _get_upload():
+    app.logger.debug("IDS %r" % request.form.get('id', None))
+
     try:
-        id = int(request.form.get('id', None))
+        id = long(request.form.get('id', None))
     except ValueError:
+        app.logger.debug("Invalid id specified: %r"
+                         % request.form.get('id', None))
         raise abort(404)
 
     file_ids = session.get('file_ids', [])
+    app.logger.debug(file_ids)
     if id not in file_ids:
+        app.logger.debug("No upload with id %r for user" % id)
         raise abort(404)
 
     upload = Upload.get_for_id(id)
     if upload:
         return upload
     else:
+        app.logger.debug("Upload with id %r doesn't exist" % id)
         raise abort(404)
 
 def _get_uploads():
     file_ids = session.get('file_ids', [])
     return Upload.get_for_ids(file_ids)
 
-@app.route('/')
 @templated('main.html')
 def main():
     files = _get_uploads()
     return {'uploads': files}
 
-@app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' in request.files and request.files['file']:
         app.logger.info("Upload form is valid")
@@ -70,13 +75,11 @@ def upload_file():
 
     return redirect(url_for('main'))
 
-#@app.route('/confirmdelete', methods=['POST'])
 #@templated('confirm_delete.html')
 #def confirm_delete():
     #files = _get_uploads()
     #return {'uploads': files}
 
-@app.route('/delete', methods=['POST'])
 def delete():
     if request.form.get('delete', False):
         upload = _get_upload()
@@ -88,13 +91,11 @@ def delete():
 
     return redirect(url_for('main'))
 
-@app.route('/confirmdelete/all', methods=['POST'])
 @templated('confirm_delete_all.html')
 def confirm_delete_all():
     files = _get_uploads()
     return {'uploads': files}
 
-@app.route('/deleteall', methods=['POST'])
 def delete_all():
     if request.form.get('delete', False):
         files = _get_uploads()
@@ -106,7 +107,6 @@ def delete_all():
 
     return redirect(url_for('main'))
 
-@app.route('/combine', methods=['POST'])
 def combine_pdfs():
 
     def order_files(files, order):

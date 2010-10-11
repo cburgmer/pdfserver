@@ -12,15 +12,17 @@ If you don't trust other servers with your data, deploy a copy yourself!
 
 Example
 =======
-See http://cburgmer.nfshost.com/pdfserver/ for an example installation.
+See http://pdfserverapp.appspot.com/ for an example installation.
 
 Dependencies
 ============
+(see ``requirements.txt``)
+
 * Python 2.5, http://www.python.org
 * Flask (tested on 0.6), http://flask.pocoo.org/
 * Flask-Babel, http://packages.python.org/Flask-Babel/
 * SQLAlchemy (probably >= 0.6.0), http://www.sqlalchemy.org/
-* pyPdf (tested with 1.12, but needs git~20091021 for "N pages on one"), 
+* pyPdf (tested with 1.12, but needs git~20091021 for "N pages on one"),
   http://pybrary.net/pyPdf/
 
 Optionally
@@ -45,13 +47,16 @@ Features
 * Selecting pages & page ranges
 * Rotate pages
 * Add watermark to pages
+* Runs on the Google App Engine
 
 Changes
 =======
 0.3
 
+* Renamed to "pdfserver" from "django-pdfserver"
 * "N pages on one" feature
 * Move to Flask from Django
+* Google App Engine support
 
 0.2.1
 
@@ -87,6 +92,30 @@ Serve as CGI
 
 See pdfserver.cgi for an example on how to run pdfserver through the
 traditional CGI interface.
+
+Google App Engine
+-----------------
+
+For pdfserver to run on the App Engine you need to download and copy
+dependencies locally::
+
+    # Get dependencies
+    $ mkdir tmp
+    $ pip install -r requirements.txt distribute --build=tmp --src=tmp \
+      --no-install --ignore-installed
+    $ mv tmp/Babel/babel/ tmp/Flask/flask/ tmp/Flask-Babel/flaskext/ \
+      tmp/Jinja2/jinja2/ tmp/pypdf/pyPdf/ tmp/pytz/pytz \
+      tmp/speaklater/speaklater.py tmp/Werkzeug/werkzeug/ \
+      tmp/reportlab/src/reportlab/ tmp/distribute/pkg_resources.py .
+    $ rm -rf tmp
+    # Add a secret key
+    $ $EDITOR appengine.py
+    # Choose your application name
+    $ $EDITOR app.yaml
+    # Run the development server
+    $ /usr/local/google_appengine/dev_appserver.py .
+    # Finally upload
+    $ /usr/local/google_appengine/appcfg.py update .
 
 Contact
 =======

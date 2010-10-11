@@ -2,6 +2,10 @@
 
 import math
 try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
+try:
     from itertools import product
 except ImportError:
     def product(*args):
@@ -130,7 +134,7 @@ def n_pages_on_one(pages, pages_sheet):
 
     return new_pages
 
-def write_text_overlay(text, filename):
+def write_text_overlay(text):
     """
     Writes a PDF file with the given text to be used as an "overlay".
     """
@@ -150,28 +154,23 @@ def write_text_overlay(text, filename):
     gray.alpha = 0.5
     style.textColor = gray
 
-    doc = SimpleDocTemplate(filename)
+    f = StringIO()
+    doc = SimpleDocTemplate(f)
     doc.build([Spacer(1, 3.5 * units.inch), Paragraph(text, style)])
 
-    return filename
+    return f
 
 def get_overlay_page(text_overlay):
     try:
-        # Create tempfile
-        import tempfile
-        s = tempfile.NamedTemporaryFile()
-
         # Write pdf overlay with reportpdf
-        filename = write_text_overlay(text_overlay, s.name)
-        if not filename:
-            return
+        f = write_text_overlay(text_overlay)
 
         # Get page object
-        overlay_pdf = PdfFileReader(file(filename, "rb"))
+        overlay_pdf = PdfFileReader(f)
         overlay = overlay_pdf.getPage(0)
 
         return overlay
-    except IOError, e:
+    except Exception, e:
         app.logger.debug("IOError generating text overlay: %s" % e)
         pass
 

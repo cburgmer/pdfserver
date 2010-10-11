@@ -1,0 +1,15 @@
+Flask
+
+# i18n
+Flask-Babel
+
+# Database models (not for App Engine)
+SQLAlchemy
+
+# We need bleeding edge pyPdf for the "n pages on one" feature
+# (optionally, 1.12 will work basically)
+-e git+git://github.com/mfenniak/pyPdf#egg=pyPdf>1.12
+
+# Watermarking (optional)
+reportlab
+-f http://www.reportlab.com/software/opensource/rl-toolkit/download/

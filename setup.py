@@ -1,6 +1,32 @@
+import re
+
 from distribute_setup import use_setuptools
 use_setuptools()
 from setuptools import setup, find_packages
+
+def parse_requirements(file_name):
+    requirements = []
+    for line in open(file_name, 'r').read().split('\n'):
+        if re.match(r'(\s*#)|(\s*$)', line):
+            continue
+        if re.match(r'\s*-e\s+', line):
+            # TODO support version numbers
+            requirements.append(re.sub(r'\s*-e\s+.*#egg=(.*)$', r'\1', line))
+        elif re.match(r'\s*-f\s+', line):
+            pass
+        else:
+            requirements.append(line)
+
+    return requirements
+
+def parse_dependency_links(file_name):
+    dependency_links = []
+    for line in open(file_name, 'r').read().split('\n'):
+        if re.match(r'\s*-[ef]\s+', line):
+            dependency_links.append(re.sub(r'\s*-[ef]\s+', '', line))
+
+    return dependency_links
+
 
 setup(
     name = "pdfserver",
@@ -13,12 +39,8 @@ setup(
     url = "http://cburgmer.nfshost.com/pdfserver/",
     package_data = {'pdfserver': ['templates/*.html', 'locale/*/*.mo', 'locale/*/*.po',
                                   'media/css/*.css', 'media/css/images/*','media/js/*.js']},
-    install_requires=['pyPdf >= 1.12', 'Flask', 'Flask-Babel', 'SQLAlchemy'],
-    dependency_links = ['git+git://github.com/mfenniak/pyPdf#egg=pyPdf'],
-    extras_require = {
-        'watermarks': ['python-reportlab'],
-        'npagesonone': ['pyPdf > 1.12'],
-    },
+    install_requires=parse_requirements('requirements.txt'),
+    dependency_links=parse_dependency_links('requirements.txt'),
     classifiers = [
     	"Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

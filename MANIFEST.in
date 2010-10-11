@@ -11,3 +11,5 @@ include README.rst
 include DEVELOPMENT
 include LICENSE
 include TODO
+include requirements.txt
+include app.yaml
