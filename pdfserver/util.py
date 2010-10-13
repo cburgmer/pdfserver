@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 import math
 try:
     from cStringIO import StringIO
@@ -18,6 +19,75 @@ from pyPdf import PdfFileWriter, PdfFileReader
 from pyPdf.pdf import PageObject
 
 from pdfserver import app
+
+def handle_pdfs(files_handles, page_range_text=None, pages_sheet=1, rotate=0,
+                overlay=None):
+    """
+    Does the actual work on the pdf files:
+
+    * Merges
+    * Selects page ranges
+    * Joins n pages on one
+    * Rotates
+    * Adds watermark
+    """
+    output = PdfFileWriter()
+
+    if overlay and isinstance(overlay, basestring):
+        overlay = get_overlay_page(overlay)
+
+    for item_idx, handle in enumerate(files_handles):
+        f = handle.get_file()
+        pdf_obj = PdfFileReader(f)
+        page_count = pdf_obj.getNumPages()
+
+        # Get page ranges
+        page_ranges = []
+        if page_range_text and len(page_range_text) > item_idx:
+            ranges = re.findall(r'\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+',
+                                page_range_text[item_idx])
+            for pages in ranges:
+                match_obj = re.match(r'^(\d*)\s*-\s*(\d*)$',
+                                     page_range_text[item_idx])
+                if match_obj:
+                    from_page, to_page = match_obj.groups()
+                    if from_page:
+                        from_page_idx = max(int(from_page)-1, 0)
+                    else:
+                        from_page_idx = 0
+                    if to_page:
+                        to_page_idx = min(int(to_page), page_count)
+                    else:
+                        to_page_idx = page_count
+
+                    page_ranges.append(range(from_page_idx, to_page_idx))
+                else:
+                    page_idx = int(pages[item_idx])-1
+                    if page_idx >= 0 and page_idx < page_count:
+                        page_ranges.append([page_idx])
+        else:
+            page_ranges = [range(pdf_obj.getNumPages())]
+
+        # Extract pages from PDF
+        pages = []
+        for page_range in page_ranges:
+            for page_idx in page_range:
+                pages.append(pdf_obj.getPage(page_idx))
+
+        # Apply operations
+        if pages_sheet > 1 and pages and hasattr(pages[0].mediaBox, 'getWidth'):
+            pages = n_pages_on_one(pages, pages_sheet)
+        elif pages_sheet > 1 and not hasattr(pages[0].mediaBox, 'getWidth'):
+            app.logger.debug("pyPdf too old, not merging pages onto one")
+        if rotate:
+            app.logger.debug("rotate, clockwise, %r " % rotate)
+            map(lambda page: page.rotateClockwise(rotate), pages)
+        if overlay:
+            map(lambda page: page.mergePage(overlay), pages)
+
+        map(output.addPage, pages)
+
+    return output
 
 def lower_divisor_iterator(value):
     """

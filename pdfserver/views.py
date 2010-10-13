@@ -13,7 +13,7 @@ from pyPdf import PdfFileWriter, PdfFileReader
 
 from pdfserver import app, babel
 Upload = __import__(app.config['MODELS'], fromlist='Upload').Upload
-from pdfserver.util import get_overlay_page, n_pages_on_one, templated
+from pdfserver.util import templated, handle_pdfs
 
 @babel.localeselector
 def get_locale():
@@ -107,6 +107,20 @@ def delete_all():
 
     return redirect(url_for('main'))
 
+def _respond_with_pdf(output):
+    # TODO get proper file name
+    response = Response(content_type='application/pdf')
+    response.headers.add('Content-Disposition',
+                         'attachment; filename=combined.pdf')
+
+    buffer = StringIO()
+    output.write(buffer)
+    response.data = buffer.getvalue()
+
+    app.logger.debug("Wrote %d bytes" % len(response.data))
+
+    return response
+
 def combine_pdfs():
 
     def order_files(files, order):
@@ -139,77 +153,21 @@ def combine_pdfs():
         pages_sheet = 1
 
     text_overlay = request.form.get('text_overlay', None)
-    if text_overlay:
-        overlay = get_overlay_page(text_overlay)
-    else:
-        overlay = None
 
     app.logger.debug(u"Parameters: %d pages on one, rotate %d°, text overlay %r"
                      % (pages_sheet, rotate, text_overlay))
 
-    output = PdfFileWriter()
 
-    # Get pdf objects and arrange in the user selected order, then parse ranges
+    # Get pdf objects and arrange in the user selected order, then get ranges
     order = request.form.get('order', "")
-    for item_idx, upload in order_files(files, order):
-        f = upload.get_file()
-        pdf_obj = PdfFileReader(f)
-        page_count = pdf_obj.getNumPages()
+    indices, uploads = zip(*order_files(files, order))
+    pages = [request.form.get('pages_%d' % item_idx, "")
+                    for item_idx in indices]
 
-        # Get page ranges
-        pages = request.form.get('pages_%d' % item_idx, "")
-        page_ranges = []
-        if pages:
-            ranges = re.findall(r'\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+', pages)
-            for pages in ranges:
-                match_obj = re.match(r'^(\d*)\s*-\s*(\d*)$', pages)
-                if match_obj:
-                    from_page, to_page = match_obj.groups()
-                    if from_page:
-                        from_page_idx = max(int(from_page)-1, 0)
-                    else:
-                        from_page_idx = 0
-                    if to_page:
-                        to_page_idx = min(int(to_page), page_count)
-                    else:
-                        to_page_idx = page_count
+    # Do the actual work
+    output = handle_pdfs(uploads, pages,
+                         pages_sheet=pages_sheet,
+                         rotate=rotate,
+                         overlay=text_overlay)
 
-                    page_ranges.append(range(from_page_idx, to_page_idx))
-                else:
-                    page_idx = int(pages)-1
-                    if page_idx >= 0 and page_idx < page_count:
-                        page_ranges.append([page_idx])
-        else:
-            page_ranges = [range(pdf_obj.getNumPages())]
-
-        # Extract pages from PDF
-        pages = []
-        for page_range in page_ranges:
-            for page_idx in page_range:
-                pages.append(pdf_obj.getPage(page_idx))
-
-        # Apply operations
-        if pages_sheet > 1 and pages and hasattr(pages[0].mediaBox, 'getWidth'):
-            pages = n_pages_on_one(pages, pages_sheet)
-        elif pages_sheet > 1 and not hasattr(pages[0].mediaBox, 'getWidth'):
-            app.logger.debug("pyPdf too old, not merging pages onto one")
-        if rotate:
-            app.logger.debug("rotate, clockwise, %r " % rotate)
-            map(lambda page: page.rotateClockwise(rotate), pages)
-        if overlay:
-            map(lambda page: page.mergePage(overlay), pages)
-
-        map(output.addPage, pages)
-
-    # TODO get proper file name
-    response = Response(content_type='application/pdf')
-    response.headers.add('Content-Disposition',
-                         'attachment; filename=combined.pdf')
-
-    buffer = StringIO()
-    output.write(buffer)
-    response.data = buffer.getvalue()
-
-    app.logger.debug("Wrote %d bytes" % len(response.data))
-
-    return response
+    return _respond_with_pdf(output)
