@@ -13,3 +13,6 @@ SQLAlchemy
 # Watermarking (optional)
 reportlab
 -f http://www.reportlab.com/software/opensource/rl-toolkit/download/
+
+# Provide manage command
+Flask-Script

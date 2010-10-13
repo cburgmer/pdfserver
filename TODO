@@ -3,3 +3,4 @@
 * Ranges vanish when file is added and page reloaded
 * Only show options that are actually available (dependencies!).
 * Unittests
+* Celery & Co

@@ -72,9 +72,9 @@ Install this application with::
 
 You can simply run the development server with::
 
-    $ python run.py createdb
+    $ python manage.py createdb
     $ mkdir uploads
-    $ python run.py
+    $ python manage.py runserver
 
 General
 -------
@@ -89,7 +89,7 @@ General
 
 4. Create the database by running in Python::
 
-    >>> from pdfserver import models, database; database.init_db()
+    >>> python manage.py createdb
 
 Serve as CGI
 ------------
