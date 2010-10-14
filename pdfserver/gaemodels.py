@@ -5,8 +5,6 @@ from google.appengine.ext import db
 
 from pdfserver import app
 
-upload_location = app.config['UPLOAD_TO']
-
 MAX_BLOB_SIZE = 1024 * 1024 - 1000 # ~1 MB, works for me
 
 USE_1MB_WORKAROUND = True
@@ -167,3 +165,14 @@ class FileBlob9(db.Model):
     blob = db.BlobProperty()
 
 BLOB_COUNT = 10
+
+if USE_1MB_WORKAROUND:
+    max_upload_bytes = BLOB_COUNT * MAX_BLOB_SIZE
+else:
+    max_upload_bytes = MAX_BLOB_SIZE
+
+if (not app.config['MAX_CONTENT_LENGTH']
+    or app.config['MAX_CONTENT_LENGTH'] > max_upload_bytes):
+    app.logger.info("No MAX_CONTENT_LENGTH set, or value to high. "
+                    "Reset to %d bytes." % max_upload_bytes)
+    app.config['MAX_CONTENT_LENGTH'] = max_upload_bytes
