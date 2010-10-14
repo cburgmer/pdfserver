@@ -7,7 +7,7 @@ from pdfserver import app
 
 upload_location = app.config['UPLOAD_TO']
 
-MAX_BLOB_SIZE = 1024 * 1024 - 100 # ~1 MB, works for me
+MAX_BLOB_SIZE = 1024 * 1024 - 1000 # ~1 MB, works for me
 
 USE_1MB_WORKAROUND = True
 """
