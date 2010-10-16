@@ -4,9 +4,9 @@
 <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
 <link type="text/css" href="static/css/jquery-ui.css" rel="stylesheet" />
 <link type="text/css" href="static/css/pdfserver.css" rel="stylesheet" />
-<script type="text/javascript" src="static/js/jquery.js"></script>
-<script type="text/javascript" src="static/js/jquery-ui.js"></script>
-<script type="text/javascript" src="static/js/jquery.validate.min.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.min.js') }}"></script>
 <title>{{ _("PDF server") }}</title>
 </head>
 <body>

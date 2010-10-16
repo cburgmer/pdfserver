@@ -1,27 +1,26 @@
 {% extends "base.html" %}
-{% load i18n %}
 {% block content %}
 <style type="text/css">
         #files tr { margin: 0 3px 3px 3px; padding: 0.4em; font-size: 1.2em; height: 20px; background-color:#eef; }
 </style>
-<h2>{% trans "Confirm deletion" %}</h2>
+<h2>{{ _("Confirm deletion") }}</h2>
 
-<p>{% trans "Are you sure you want to delete this file?" %}</p>
+<p>{{ _("Are you sure you want to delete this file?") }}</p>
 
-<form action="{% url delete %}" method="post">{% csrf_token %}
+<form action="{{ url_for('delete') }}" method="post">
 
 <table id="upload_table">
     <thead>
     <tr>   
-        <th>{% trans "Name" %}</th>
-        <th>{% trans "Size" %}</th>
-        <th>{% trans "Pages" %}</th>
+        <th>{{ _("Name") }}</th>
+        <th>{{ _("Size") }}</th>
+        <th>{{ _("Pages") }}</th>
     </tr>
     </thead>
     <tbody id="files">
     <tr>
         <td>{{upload.filename}}</td>
-        <td>{{upload.file.size|filesizeformat}}</td>
+        <td>{% if upload.size %}{{upload.size|filesizeformat}}{% endif %}</td>
         <td style="text-align: right;">{{upload.page_count}}</td>
     </tr>
     </tbody>

@@ -195,7 +195,7 @@
     </form>
 </div>
 </noscript>
-<div id="deleteall" title="{{ _("Confirm deletion") }}">
+<div id="deleteall" style="display: none;" title="{{ _("Confirm deletion") }}">
         <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>{{ _("All files will be deleted. Are you sure?") }}</p>
         <form action="{{ url_for('delete_all') }}" name="deleteall" method="post">
         <input type="hidden" name="delete" value="Delete all"/>
