@@ -29,6 +29,8 @@ Optionally
 ----------
 * python-reportlab (tested with 2.4) for adding watermarks,
   http://www.reportlab.com/software/opensource/rl-toolkit/
+* celery (tested with 2.0.0) for asynchronous request handling,
+  http://celeryq.org/
 
 Already included
 ----------------
@@ -48,9 +50,14 @@ Features
 * Rotate pages
 * Add watermark to pages
 * Runs on the Google App Engine
+* Handle builds asynchronously
 
 Changes
 =======
+0.x
+
+* Celery support for asynchronous PDF generation
+
 0.3
 
 * Renamed to "pdfserver" from "django-pdfserver"
@@ -75,6 +82,15 @@ You can simply run the development server with::
     $ python manage.py createdb
     $ mkdir uploads
     $ python manage.py runserver
+
+Celery
+------
+For optional, asynchronous generation of the resulting PDF install celery and
+(as default broker) RabbitMQ.
+
+Run celeryd from the project's directory to handle tasks asynchronously::
+
+    $ celeryd
 
 General
 -------
