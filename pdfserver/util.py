@@ -43,12 +43,12 @@ def handle_pdfs(files_handles, page_range_text=None, pages_sheet=1, rotate=0,
 
         # Get page ranges
         page_ranges = []
-        if page_range_text and len(page_range_text) > item_idx:
+        if (page_range_text and len(page_range_text) > item_idx
+            and page_range_text[item_idx]):
             ranges = re.findall(r'\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+',
                                 page_range_text[item_idx])
-            for pages in ranges:
-                match_obj = re.match(r'^(\d*)\s*-\s*(\d*)$',
-                                     page_range_text[item_idx])
+            for p_range in ranges:
+                match_obj = re.match(r'^(\d*)\s*-\s*(\d*)$', p_range)
                 if match_obj:
                     from_page, to_page = match_obj.groups()
                     if from_page:
@@ -62,11 +62,11 @@ def handle_pdfs(files_handles, page_range_text=None, pages_sheet=1, rotate=0,
 
                     page_ranges.append(range(from_page_idx, to_page_idx))
                 else:
-                    page_idx = int(pages[item_idx])-1
+                    page_idx = int(p_range)-1
                     if page_idx >= 0 and page_idx < page_count:
                         page_ranges.append([page_idx])
         else:
-            page_ranges = [range(pdf_obj.getNumPages())]
+            page_ranges = [range(page_count)]
 
         # Extract pages from PDF
         pages = []
@@ -75,10 +75,11 @@ def handle_pdfs(files_handles, page_range_text=None, pages_sheet=1, rotate=0,
                 pages.append(pdf_obj.getPage(page_idx))
 
         # Apply operations
-        if pages_sheet > 1 and pages and hasattr(pages[0].mediaBox, 'getWidth'):
-            pages = n_pages_on_one(pages, pages_sheet)
-        elif pages_sheet > 1 and not hasattr(pages[0].mediaBox, 'getWidth'):
-            app.logger.debug("pyPdf too old, not merging pages onto one")
+        if pages_sheet > 1 and pages:
+            if hasattr(pages[0].mediaBox, 'getWidth'):
+                pages = n_pages_on_one(pages, pages_sheet)
+            else:
+                app.logger.debug("pyPdf too old, not merging pages onto one")
         if rotate:
             app.logger.debug("rotate, clockwise, %r " % rotate)
             map(lambda page: page.rotateClockwise(rotate), pages)
@@ -87,7 +88,9 @@ def handle_pdfs(files_handles, page_range_text=None, pages_sheet=1, rotate=0,
 
         map(output.addPage, pages)
 
-    return output
+    buffer = StringIO()
+    output.write(buffer)
+    return buffer.getvalue()
 
 def lower_divisor_iterator(value):
     """

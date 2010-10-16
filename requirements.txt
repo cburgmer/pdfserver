@@ -16,3 +16,6 @@ reportlab
 
 # Provide manage command
 Flask-Script
+
+# Asynchronous pdf generation
+celery

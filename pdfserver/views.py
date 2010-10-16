@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 import re
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
-from flask import g, request, Response, session
-from flask import abort, redirect, url_for
+from flask import g, request, Response, session, render_template
+from flask import abort, redirect, url_for, jsonify
 from werkzeug import wrap_file
+from werkzeug.exceptions import InternalServerError, Unauthorized, Gone, \
+                                NotFound
+from celery.exceptions import TaskRevokedError, NotRegistered
 
 from pyPdf import PdfFileWriter, PdfFileReader
 
 from pdfserver import app, babel
 Upload = __import__(app.config['MODELS'], fromlist='Upload').Upload
-from pdfserver.util import templated, handle_pdfs
+from pdfserver.util import templated
+from pdfserver.tasks import handle_pdfs_task
 
 @babel.localeselector
 def get_locale():
@@ -113,9 +113,7 @@ def _respond_with_pdf(output):
     response.headers.add('Content-Disposition',
                          'attachment; filename=combined.pdf')
 
-    buffer = StringIO()
-    output.write(buffer)
-    response.data = buffer.getvalue()
+    response.data = output
 
     app.logger.debug("Wrote %d bytes" % len(response.data))
 
@@ -124,8 +122,10 @@ def _respond_with_pdf(output):
 def combine_pdfs():
 
     def order_files(files, order):
-        order = map(int, re.findall(r'\d+', order))
-
+        try:
+            order = map(int, order)
+        except ValueError:
+            app.logger.debug("Error converting to ints: %r" % order)
         if (not order or len(files) != len(order) or min(order) != 1 or
             max(order) != len(files)):
             order = range(1, len(files)+1)
@@ -159,15 +159,92 @@ def combine_pdfs():
 
 
     # Get pdf objects and arrange in the user selected order, then get ranges
-    order = request.form.get('order', "")
+    order = request.form.getlist('file[]')
     indices, uploads = zip(*order_files(files, order))
     pages = [request.form.get('pages_%d' % item_idx, "")
                     for item_idx in indices]
 
     # Do the actual work
-    output = handle_pdfs(uploads, pages,
-                         pages_sheet=pages_sheet,
-                         rotate=rotate,
-                         overlay=text_overlay)
+    resp = handle_pdfs_task.apply_async((uploads,
+                                         pages,
+                                         pages_sheet,
+                                         rotate,
+                                         text_overlay))
+    # Save task in session and keep the open task list small
+    session['tasks'] = session.get('tasks', [])[-9:] + [resp.task_id]
 
-    return _respond_with_pdf(output)
+    if request.is_xhr:
+        return jsonify(ready=False, task_id=resp.task_id,
+                       url=url_for('check_result', task_id=resp.task_id))
+    else:
+        return redirect(url_for('result_page', task_id=resp.task_id))
+
+def result_page(task_id):
+    """
+    Non-Javascript result page
+    """
+    if task_id not in session.get('tasks', []):
+        app.logger.debug("Valid tasks %r" % session.get('tasks', []))
+        raise Unauthorized()
+
+    param = {'task_id': task_id,
+             'ready': handle_pdfs_task.AsyncResult(task_id).ready()}
+    return render_template('download.html', **param)
+
+def check_result(task_id):
+    if task_id not in session.get('tasks', []):
+        app.logger.debug("Valid tasks %r" % session.get('tasks', []))
+        raise Unauthorized()
+
+    result = handle_pdfs_task.AsyncResult(task_id)
+    if result.ready():
+        url = url_for('download_result', task_id=task_id)
+    else:
+        url = ''
+    return jsonify(ready=result.ready(), url=url, task_id=task_id,
+                   success=result.successful())
+
+def download_result(task_id):
+    if task_id not in session.get('tasks', []):
+        app.logger.debug("Valid tasks %r" % session.get('tasks', []))
+        raise Unauthorized()
+
+    try:
+        result = handle_pdfs_task.AsyncResult(task_id)
+        if result.ready():
+            if result.successful():
+                output = result.result
+                return _respond_with_pdf(output.decode('zlib'))
+        else:
+            app.logger.debug("Result not successful: %r" % result)
+            raise InternalServerError(unicode(result.result))
+    except TaskRevokedError:
+        app.logger.debug("Result expired %r" % task_id)
+        raise Gone("Result expired. "
+                   "You probably waited too long to download the file.")
+    except NotRegistered:
+        app.logger.debug("Result not registered %r" % task_id)
+        raise NotFound()
+
+    return redirect(url_for('result_page', task_id=task_id))
+
+def remove_download():
+    task_id = request.form.get('task_id', None)
+    app.logger.debug("task_id %r" % task_id)
+    if task_id not in session.get('tasks', []):
+        app.logger.debug("Valid tasks %r" % session.get('tasks', []))
+        raise Unauthorized()
+
+    result = handle_pdfs_task.AsyncResult(task_id)
+    session['tasks'].remove(task_id)
+    session.modified = True
+    try:
+        if hasattr(result, 'forget'):
+            result.forget()
+    except TaskRevokedError:
+        app.logger.debug("Result alrady revoked %r" % task_id)
+        pass
+    except NotRegistered:
+        app.logger.debug("Result not registered %r" % task_id)
+        raise NotFound()
+    return jsonify(status="OK")
