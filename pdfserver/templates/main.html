@@ -49,18 +49,21 @@
             modal: true,
             buttons: {
                 '{{ _("Cancel") }}': function() {
+                    // Cancel checking
                     pdfgenerated_check_interval = -1;
                     $(this).dialog('close');
                 }
             },
             // Add handler to remove download once closed (privacy)
             close:  function(event, ui) {
-                $.ajax({
-                    type : 'POST',
-                    dataType : 'json',
-                    url : '{{ url_for('remove_download') }}',
-                    data: 'task_id=' + $('#pdfgenerated_link').attr('title')
-                });
+                if ($('#pdfgenerated_link').attr('title')) {
+                    $.ajax({
+                        type : 'POST',
+                        dataType : 'json',
+                        url : '{{ url_for('remove_download') }}',
+                        data: 'task_id=' + $('#pdfgenerated_link').attr('title')
+                    });
+                }
             }
         });
         // nice input buttons
@@ -107,9 +110,11 @@
         $("#filesform").validate();
         $('#filesform').submit(function() {
             function test_pdf_finished(check_url) {
+                if (pdfgenerated_check_interval <= 0) {
+                    return
+                }
                 setTimeout(
                     function(){
-                        $('#pdfgenerated_msg').append('.');
                         $.ajax({
                             type : 'GET',
                             dataType : 'json',
@@ -127,9 +132,7 @@
                                     } else if (data.ready && !data.success) {
                                         $("#pdfgenerated_msg").html('{{ _("Error generating the PDF.") }}');
                                     } else {
-                                        if (pdfgenerated_check_interval > 0) {
-                                            test_pdf_finished(check_url);
-                                        }
+                                        test_pdf_finished(check_url);
                                     }
                             }
                         });
@@ -137,19 +140,18 @@
                     },
                     pdfgenerated_check_interval);
             };
+            $('#pdfgenerated').dialog('open');
+            $("#pdfgenerated_msg").html('{{ _("Generating your PDF...") }}<br/><img src="{{ url_for('static', filename='ajax-loader.gif')}}" alt="loading" />');
+            pdfgenerated_check_interval = 500;
             $.ajax({
                 type : 'POST',
                 dataType : 'json',
                 url : '{{ url_for('combine_pdfs') }}',
                 data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize'),
                 error: function(req, st, err) {
-                    $('#pdfgenerated').dialog('open');
                     ("#pdfgenerated_msg").html('{{ _("An error occurred: ") }}' + st);
                 },
                 success: function(data, textStatus, request) {
-                    $('#pdfgenerated').dialog('open');
-                    $("#pdfgenerated_msg").html('{{ _("Generating your PDF...") }}');
-                    pdfgenerated_check_interval = 500;
                     test_pdf_finished(data.url);
                 }
             });

@@ -37,7 +37,7 @@ def createdb():
     """Creates the database"""
     print >>sys.stderr, "Creating database...",
 
-    from pdfserver import models, database
+    from pdfserver import models, faketask, database
     database.init_db()
 
     print >>sys.stderr, "done"

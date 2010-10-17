@@ -42,9 +42,9 @@ setup(
                                   'media/css/images/*','media/js/*.js']},
     install_requires = parse_requirements('requirements.txt'),
     dependency_links = parse_dependency_links('requirements.txt'),
-    #extras_require = {
-    #    'async': ['celery'],
-    #},
+    extras_require = {
+        'async': ['celery'],
+    },
     classifiers = [
     	"Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

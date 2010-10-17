@@ -6,14 +6,13 @@ from flask import abort, redirect, url_for, jsonify
 from werkzeug import wrap_file
 from werkzeug.exceptions import InternalServerError, Unauthorized, Gone, \
                                 NotFound
-from celery.exceptions import TaskRevokedError, NotRegistered
 
 from pyPdf import PdfFileWriter, PdfFileReader
 
 from pdfserver import app, babel
 Upload = __import__(app.config['MODELS'], fromlist='Upload').Upload
 from pdfserver.util import templated
-from pdfserver.tasks import handle_pdfs_task
+from pdfserver.tasks import handle_pdfs_task, TaskRevokedError, NotRegistered
 
 @babel.localeselector
 def get_locale():

@@ -8,6 +8,15 @@ SECRET_KEY = None
 UPLOAD_TO = os.path.join(package_path, '..', 'uploads')
 MODELS = 'pdfserver.models'
 
+# Asynchronous task settings
+try:
+    from celery.decorators import task
+    TASK_HANDLER = 'celery.decorators'
+except ImportError:
+    TASK_HANDLER = 'pdfserver.faketask'
+# Expire results after 10 minutes (currently only respected by faketask)
+TASK_RESULT_EXPIRES = 10 * 60
+
 translation_paths = os.path.join(os.path.dirname(__file__), 'translations')
 SUPPORTED_TRANSLATIONS = ['en'] + [s.replace(translation_paths + '/', '')
                                    for s in glob.glob(translation_paths + '/*')]
