@@ -29,8 +29,8 @@ Optionally
 ----------
 * python-reportlab (tested with 2.4) for adding watermarks,
   http://www.reportlab.com/software/opensource/rl-toolkit/
-* celery (tested with 2.0.0) for asynchronous request handling,
-  http://celeryq.org/
+* celery (tested with 2.0.0) for asynchronous request handling (not needed on
+  Google App Engine), http://celeryq.org/
 
 Already included
 ----------------
@@ -56,7 +56,7 @@ Changes
 =======
 0.x
 
-* Celery support for asynchronous PDF generation
+* Support for asynchronous PDF generation
 
 0.3
 
@@ -83,15 +83,6 @@ You can simply run the development server with::
     $ mkdir uploads
     $ python manage.py runserver
 
-Celery
-------
-For optional, asynchronous generation of the resulting PDF install celery and
-(as default broker) RabbitMQ.
-
-Run celeryd from the project's directory to handle tasks asynchronously::
-
-    $ celeryd
-
 General
 -------
 
@@ -106,6 +97,18 @@ General
 4. Create the database by running in Python::
 
     $ python manage.py createdb
+
+Celery
+------
+For optional, asynchronous generation of the resulting PDF install celery and
+(as default broker) RabbitMQ.
+
+Run celeryd from the project's directory to handle tasks asynchronously::
+
+    $ celeryd
+
+The Google App Engine has its own dereferred library which is automatically
+used.
 
 Serve as CGI
 ------------
@@ -136,6 +139,11 @@ dependencies locally::
     $ /usr/local/google_appengine/dev_appserver.py .
     # Finally upload
     $ /usr/local/google_appengine/appcfg.py update .
+
+If tasks won't get executed (you can check under
+http://localhost:8080/_ah/admin/tasks?queue=default), you might got hitten
+by bug http://code.google.com/p/appengine-mapreduce/issues/detail?id=9,
+see workaround there.
 
 Contact
 =======

@@ -1,9 +1,7 @@
 include pdfserver/translations/*/*/messages.po
 include pdfserver/translations/*/*/messages.mo
 include pdfserver/templates/*.html
-include pdfserver/static/js/*.js
-include pdfserver/static/css/images/*
-include pdfserver/static/css/*.css
+include pdfserver/static/*
 include *.py
 include pdfserver.cgi
 include babel.cfg

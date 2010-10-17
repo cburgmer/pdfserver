@@ -78,7 +78,7 @@ class Upload(db.Model):
                                                                 MAX_BLOB_SIZE)))
             blob.put()
         if len(upload.unsaved_content.read(1)) > 0:
-            raise ValueError("Uploaded file to big")
+            raise ValueError("Uploaded file too big")
 
     def store_file(self, file):
         self.filename = file.filename

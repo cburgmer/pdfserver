@@ -131,10 +131,10 @@ def combine_pdfs():
 
         return ((idx, files[idx-1]) for idx in order)
 
-    files = _get_uploads()
+    file_ids = session.get('file_ids', [])
 
     # If user clicked on button but no files were uploaded
-    if not files:
+    if not file_ids:
         return redirect(url_for('main'))
 
     # Get options
@@ -159,12 +159,12 @@ def combine_pdfs():
 
     # Get pdf objects and arrange in the user selected order, then get ranges
     order = request.form.getlist('file[]')
-    indices, uploads = zip(*order_files(files, order))
+    indices, file_ids = zip(*order_files(file_ids, order))
     pages = [request.form.get('pages_%d' % item_idx, "")
                     for item_idx in indices]
 
     # Do the actual work
-    resp = handle_pdfs_task.apply_async((uploads,
+    resp = handle_pdfs_task.apply_async((file_ids,
                                          pages,
                                          pages_sheet,
                                          rotate,

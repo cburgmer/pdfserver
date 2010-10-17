@@ -1,6 +1,6 @@
 """
 Fake task handler that emulates celery's task handling.
-Results are processed synchronous and are stored in a database table for later
+Results are processed synchronously and are stored in a database table for later
 retrieval.
 """
 
@@ -96,8 +96,9 @@ class FakeAsyncResult(object):
 
             if task_result is None:
                 raise NotRegistered()
-            #if not task_result.available:
-                # TODO raise ...
+            if not task_result.available:
+                # TODO raise a better Exception
+                raise NotRegistered()
 
             self._task_result = task_result
 
