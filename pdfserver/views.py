@@ -5,8 +5,8 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from flask import g, request, Response, session
-from flask import abort, redirect, url_for
+from flask import g, request, Response, session, flash, abort, redirect, url_for
+from flaskext.babel import gettext as tr
 from werkzeug import wrap_file
 
 from pyPdf import PdfFileWriter, PdfFileReader
@@ -70,6 +70,8 @@ def upload_file():
         session['file_ids'] = file_ids
 
         app.logger.info("Saved upload: %s" % upload)
+        flash(tr('Uploaded your file "%(filename)s" successfully.',
+                 filename=upload.filename))
     else:
         app.logger.error("No file specified")
 
@@ -89,6 +91,8 @@ def delete():
         Upload.delete(upload)
         Upload.commit()
 
+        flash(tr('Deleted file "%(filename)s".', filename=upload.filename))
+
     return redirect(url_for('main'))
 
 @templated('confirm_delete_all.html')
@@ -104,6 +108,8 @@ def delete_all():
         for upload in files:
             Upload.delete(upload)
         Upload.commit()
+
+        flash(tr('Deleted all files.'))
 
     return redirect(url_for('main'))
 

@@ -27,7 +27,10 @@
     $(function() {
         $("#files").sortable();
         $(".noselection").disableSelection();
-        // delete all popop dialog
+        setTimeout(function() {
+            $('#messages').fadeOut(500);
+        }, 3000);
+        // delete all popup dialog
         $("#deleteall").dialog({
             autoOpen: false,
             resizable: false,
@@ -87,6 +90,16 @@
     });
 //]]>
 </script>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div id="messages"><ul>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul></div>
+  {% endif %}
+{% endwith %}
+
 <h1>{{ _("Welcome to pdfserver") }}</h1>
 <p>{{ _("Upload PDF files, drag them into the right order and recombine pages.") }}</p>
 
