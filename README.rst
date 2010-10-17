@@ -105,7 +105,7 @@ General
 
 4. Create the database by running in Python::
 
-    >>> python manage.py createdb
+    $ python manage.py createdb
 
 Serve as CGI
 ------------
