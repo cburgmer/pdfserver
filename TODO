@@ -4,3 +4,4 @@
 * Only show options that are actually available (dependencies!).
 * Unittests
 * Expire results from celery (using TASK_RESULT_EXPIRES)
+* Check celery broker timeout
