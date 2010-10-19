@@ -2,6 +2,7 @@
 {% block content %}
 <script type="text/javascript">
 //<![CDATA[
+    var pdfgenerated_check_interval = -1;
     Array.max = function( array ){
         return Math.max.apply(Math , array);
     };
@@ -39,6 +40,29 @@
                 },
                 '{{ _("Cancel") }}': function() {
                     $(this).dialog('close');
+                }
+            }
+        });
+        $("#pdfgenerated").dialog({
+            autoOpen: false,
+            resizable: false,
+            modal: true,
+            buttons: {
+                '{{ _("Cancel") }}': function() {
+                    // Cancel checking
+                    pdfgenerated_check_interval = -1;
+                    $(this).dialog('close');
+                }
+            },
+            // Add handler to remove download once closed (privacy)
+            close:  function(event, ui) {
+                if ($('#pdfgenerated_link').attr('title')) {
+                    $.ajax({
+                        type : 'POST',
+                        dataType : 'json',
+                        url : '{{ url_for('remove_download') }}',
+                        data: 'task_id=' + $('#pdfgenerated_link').attr('title')
+                    });
                 }
             }
         });
@@ -84,6 +108,55 @@
             text: true
         });
         $("#filesform").validate();
+        $('#filesform').submit(function() {
+            function test_pdf_finished(check_url) {
+                if (pdfgenerated_check_interval <= 0) {
+                    return
+                }
+                setTimeout(
+                    function(){
+                        $.ajax({
+                            type : 'GET',
+                            dataType : 'json',
+                            url : check_url,
+                            error: function(req, st, err) {
+                                $("#pdfgenerated_msg").html('{{ _("An error occurred: ") }}' + st);
+                            },
+                            success: function(data) {
+                                    if (data.ready && data.success) {
+                                        $("#pdfgenerated_msg").html('{{ _("Your PDF file has been generated.") }} <p><a id="pdfgenerated_link" target="_blank" href="' + data.url + '" title="' + data.task_id + '">{{ _("Download PDF...") }}</a></p>');
+                                        //window.open(data.url, 'generatedpdf');
+                                        $("#pdfgenerated").dialog("option", "buttons", {
+                                            "Finish": function() { $(this).dialog("close"); }
+                                        });
+                                    } else if (data.ready && !data.success) {
+                                        $("#pdfgenerated_msg").html('{{ _("Error generating the PDF.") }}');
+                                    } else {
+                                        test_pdf_finished(check_url);
+                                    }
+                            }
+                        });
+                        pdfgenerated_check_interval *= 1.5;
+                    },
+                    pdfgenerated_check_interval);
+            };
+            $('#pdfgenerated').dialog('open');
+            $("#pdfgenerated_msg").html('{{ _("Generating your PDF...") }}<br/><img src="{{ url_for('static', filename='ajax-loader.gif')}}" alt="loading" />');
+            pdfgenerated_check_interval = 500;
+            $.ajax({
+                type : 'POST',
+                dataType : 'json',
+                url : '{{ url_for('combine_pdfs') }}',
+                data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize'),
+                error: function(req, st, err) {
+                    ("#pdfgenerated_msg").html('{{ _("An error occurred: ") }}' + st);
+                },
+                success: function(data, textStatus, request) {
+                    test_pdf_finished(data.url);
+                }
+            });
+            return false;
+        });
     });
 //]]>
 </script>
@@ -91,8 +164,7 @@
 <p>{{ _("Upload PDF files, drag them into the right order and recombine pages.") }}</p>
 
 <h3>{{ _("PDF files") }}</h3>
-<form action="{{ url_for('combine_pdfs') }}" id="filesform" name="combine" method="post" onsubmit="document.forms['combine'].elements['order'].value = $('#files').sortable('serialize'); return true">
-<input type="hidden" name="order" value=""/>
+<form action="{{ url_for('combine_pdfs') }}" id="filesform" name="combine" method="post">
 <table id="filetable">
     <thead>
     <tr>
@@ -200,6 +272,12 @@
         <form action="{{ url_for('delete_all') }}" name="deleteall" method="post">
         <input type="hidden" name="delete" value="Delete all"/>
         </form>
+</div>
+<div id="pdfgenerated" style="display: none;" title="{{ _("Generating PDF") }}">
+    <p>
+        <span class="ui-icon ui-icon-clock" style="float:left; margin:0 7px 50px 0;"></span>
+        <span id="pdfgenerated_msg"></span>
+    </p>
 </div>
 
 <div style="margin-top: 30px;">

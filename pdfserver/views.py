@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 import re
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
-from flask import g, request, Response, session
-from flask import abort, redirect, url_for
+from flask import g, request, Response, session, render_template
+from flask import abort, redirect, url_for, jsonify
 from werkzeug import wrap_file
+from werkzeug.exceptions import InternalServerError, Unauthorized, Gone, \
+                                NotFound
 
 from pyPdf import PdfFileWriter, PdfFileReader
 
 from pdfserver import app, babel
 Upload = __import__(app.config['MODELS'], fromlist='Upload').Upload
-from pdfserver.util import get_overlay_page, n_pages_on_one, templated
+from pdfserver.util import templated
+from pdfserver.tasks import handle_pdfs_task, NotRegistered
 
 @babel.localeselector
 def get_locale():
@@ -107,21 +106,35 @@ def delete_all():
 
     return redirect(url_for('main'))
 
+def _respond_with_pdf(output):
+    # TODO get proper file name
+    response = Response(content_type='application/pdf')
+    response.headers.add('Content-Disposition',
+                         'attachment; filename=combined.pdf')
+
+    response.data = output
+
+    app.logger.debug("Wrote %d bytes" % len(response.data))
+
+    return response
+
 def combine_pdfs():
 
     def order_files(files, order):
-        order = map(int, re.findall(r'\d+', order))
-
+        try:
+            order = map(int, order)
+        except ValueError:
+            app.logger.debug("Error converting to ints: %r" % order)
         if (not order or len(files) != len(order) or min(order) != 1 or
             max(order) != len(files)):
             order = range(1, len(files)+1)
 
         return ((idx, files[idx-1]) for idx in order)
 
-    files = _get_uploads()
+    file_ids = session.get('file_ids', [])
 
     # If user clicked on button but no files were uploaded
-    if not files:
+    if not file_ids:
         return redirect(url_for('main'))
 
     # Get options
@@ -139,77 +152,95 @@ def combine_pdfs():
         pages_sheet = 1
 
     text_overlay = request.form.get('text_overlay', None)
-    if text_overlay:
-        overlay = get_overlay_page(text_overlay)
-    else:
-        overlay = None
 
     app.logger.debug(u"Parameters: %d pages on one, rotate %d°, text overlay %r"
                      % (pages_sheet, rotate, text_overlay))
 
-    output = PdfFileWriter()
 
-    # Get pdf objects and arrange in the user selected order, then parse ranges
-    order = request.form.get('order', "")
-    for item_idx, upload in order_files(files, order):
-        f = upload.get_file()
-        pdf_obj = PdfFileReader(f)
-        page_count = pdf_obj.getNumPages()
+    # Get pdf objects and arrange in the user selected order, then get ranges
+    order = request.form.getlist('file[]')
+    indices, file_ids = zip(*order_files(file_ids, order))
+    pages = [request.form.get('pages_%d' % item_idx, "")
+                    for item_idx in indices]
 
-        # Get page ranges
-        pages = request.form.get('pages_%d' % item_idx, "")
-        page_ranges = []
-        if pages:
-            ranges = re.findall(r'\d+\s*-\s*\d*|\d*\s*-\s*\d+|\d+', pages)
-            for pages in ranges:
-                match_obj = re.match(r'^(\d*)\s*-\s*(\d*)$', pages)
-                if match_obj:
-                    from_page, to_page = match_obj.groups()
-                    if from_page:
-                        from_page_idx = max(int(from_page)-1, 0)
-                    else:
-                        from_page_idx = 0
-                    if to_page:
-                        to_page_idx = min(int(to_page), page_count)
-                    else:
-                        to_page_idx = page_count
+    # Do the actual work
+    resp = handle_pdfs_task.apply_async((file_ids,
+                                         pages,
+                                         pages_sheet,
+                                         rotate,
+                                         text_overlay))
+    # Save task in session and keep the open task list small
+    session['tasks'] = session.get('tasks', [])[-9:] + [resp.task_id]
 
-                    page_ranges.append(range(from_page_idx, to_page_idx))
-                else:
-                    page_idx = int(pages)-1
-                    if page_idx >= 0 and page_idx < page_count:
-                        page_ranges.append([page_idx])
-        else:
-            page_ranges = [range(pdf_obj.getNumPages())]
+    if request.is_xhr:
+        return jsonify(ready=False, task_id=resp.task_id,
+                       url=url_for('check_result', task_id=resp.task_id))
+    else:
+        return redirect(url_for('result_page', task_id=resp.task_id))
 
-        # Extract pages from PDF
-        pages = []
-        for page_range in page_ranges:
-            for page_idx in page_range:
-                pages.append(pdf_obj.getPage(page_idx))
+def result_page(task_id):
+    """
+    Non-Javascript result page
+    """
+    if task_id not in session.get('tasks', []):
+        app.logger.debug("Valid tasks %r" % session.get('tasks', []))
+        raise Unauthorized()
 
-        # Apply operations
-        if pages_sheet > 1 and pages and hasattr(pages[0].mediaBox, 'getWidth'):
-            pages = n_pages_on_one(pages, pages_sheet)
-        elif pages_sheet > 1 and not hasattr(pages[0].mediaBox, 'getWidth'):
-            app.logger.debug("pyPdf too old, not merging pages onto one")
-        if rotate:
-            app.logger.debug("rotate, clockwise, %r " % rotate)
-            map(lambda page: page.rotateClockwise(rotate), pages)
-        if overlay:
-            map(lambda page: page.mergePage(overlay), pages)
+    param = {'task_id': task_id,
+             'ready': handle_pdfs_task.AsyncResult(task_id).ready()}
+    return render_template('download.html', **param)
 
-        map(output.addPage, pages)
+def check_result(task_id):
+    if task_id not in session.get('tasks', []):
+        app.logger.debug("Valid tasks %r" % session.get('tasks', []))
+        raise Unauthorized()
 
-    # TODO get proper file name
-    response = Response(content_type='application/pdf')
-    response.headers.add('Content-Disposition',
-                         'attachment; filename=combined.pdf')
+    result = handle_pdfs_task.AsyncResult(task_id)
+    if result.ready():
+        url = url_for('download_result', task_id=task_id)
+    else:
+        url = ''
+    return jsonify(ready=result.ready(), url=url, task_id=task_id,
+                   success=result.successful())
 
-    buffer = StringIO()
-    output.write(buffer)
-    response.data = buffer.getvalue()
+def download_result(task_id):
+    if task_id not in session.get('tasks', []):
+        app.logger.debug("Valid tasks %r" % session.get('tasks', []))
+        raise Unauthorized()
 
-    app.logger.debug("Wrote %d bytes" % len(response.data))
+    try:
+        result = handle_pdfs_task.AsyncResult(task_id)
+        if result.ready():
+            if hasattr(result, 'available') and not result.available():
+                raise Gone("Result expired. "
+                        "You probably waited too long to download the file.")
 
-    return response
+            if result.successful():
+                output = result.result
+                return _respond_with_pdf(output.decode('zlib'))
+            else:
+                app.logger.debug("Result not successful: %r" % result)
+                raise InternalServerError(unicode(result.result))
+    except NotRegistered:
+        app.logger.debug("Result not registered %r" % task_id)
+        raise NotFound()
+
+    return redirect(url_for('result_page', task_id=task_id))
+
+def remove_download():
+    task_id = request.form.get('task_id', None)
+    app.logger.debug("task_id %r" % task_id)
+    if task_id not in session.get('tasks', []):
+        app.logger.debug("Valid tasks %r" % session.get('tasks', []))
+        raise Unauthorized()
+
+    result = handle_pdfs_task.AsyncResult(task_id)
+    session['tasks'].remove(task_id)
+    session.modified = True
+    try:
+        if hasattr(result, 'forget'):
+            result.forget()
+    except NotRegistered:
+        app.logger.debug("Result not registered %r" % task_id)
+        raise NotFound()
+    return jsonify(status="OK")

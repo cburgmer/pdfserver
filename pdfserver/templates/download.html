@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ _("Download result") }}</h2>
+
+{% if ready %}
+    <p>{{ _("PDF generated") }}</p>
+
+    <div id="result">{{ _("Your PDF file has been generated.") }} <a href="{{ url_for('download_result', task_id=task_id) }}">{{ _("Download PDF...") }}</a></div>
+{% else %}
+    <p>{{ _("Generating PDF") }}</p>
+
+    <div id="result">{{ _("Your PDF is being generated. Reload this page to check if it has been completed.") }}</div>
+{% endif %}
+{% endblock %}

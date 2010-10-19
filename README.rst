@@ -29,6 +29,8 @@ Optionally
 ----------
 * python-reportlab (tested with 2.4) for adding watermarks,
   http://www.reportlab.com/software/opensource/rl-toolkit/
+* celery (tested with 2.0.0) for asynchronous request handling (not needed on
+  Google App Engine), http://celeryq.org/
 
 Already included
 ----------------
@@ -48,9 +50,14 @@ Features
 * Rotate pages
 * Add watermark to pages
 * Runs on the Google App Engine
+* Handle builds asynchronously
 
 Changes
 =======
+0.x
+
+* Support for asynchronous PDF generation
+
 0.3
 
 * Renamed to "pdfserver" from "django-pdfserver"
@@ -72,9 +79,9 @@ Install this application with::
 
 You can simply run the development server with::
 
-    $ python run.py createdb
+    $ python manage.py createdb
     $ mkdir uploads
-    $ python run.py
+    $ python manage.py runserver
 
 General
 -------
@@ -89,7 +96,19 @@ General
 
 4. Create the database by running in Python::
 
-    >>> from pdfserver import models, database; database.init_db()
+    $ python manage.py createdb
+
+Celery
+------
+For optional, asynchronous generation of the resulting PDF install celery and
+(as default broker) RabbitMQ.
+
+Run celeryd from the project's directory to handle tasks asynchronously::
+
+    $ celeryd
+
+The Google App Engine has its own dereferred library which is automatically
+used.
 
 Serve as CGI
 ------------
@@ -120,6 +139,11 @@ dependencies locally::
     $ /usr/local/google_appengine/dev_appserver.py .
     # Finally upload
     $ /usr/local/google_appengine/appcfg.py update .
+
+If tasks won't get executed (you can check under
+http://localhost:8080/_ah/admin/tasks?queue=default), you might got hitten
+by bug http://code.google.com/p/appengine-mapreduce/issues/detail?id=9,
+see workaround there.
 
 Contact
 =======

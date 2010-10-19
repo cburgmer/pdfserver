@@ -9,13 +9,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from pdfserver.database import metadata, db_session
 from pdfserver import app
 
-upload_location = app.config['UPLOAD_TO']
-
-@app.after_request
-def shutdown_session(response):
-    db_session.remove()
-    return response
-
 class Upload(object):
     query = db_session.query_property()
 
@@ -54,7 +47,7 @@ class Upload(object):
 
     def store_file(self, file):
         self.filename = file.filename
-        f, self.localpath = tempfile.mkstemp(dir=upload_location)
+        f, self.localpath = tempfile.mkstemp(dir=app.config['UPLOAD_TO'])
         app.logger.debug("Storing upload to %s" % self.file_path)
         file.save(self.file_path)
 
@@ -81,7 +74,7 @@ class Upload(object):
 
     @property
     def file_path(self):
-        return os.path.join(upload_location, self.localpath)
+        return os.path.join(app.config['UPLOAD_TO'], self.localpath)
 
     @property
     def size(self):

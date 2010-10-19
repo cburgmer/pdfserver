@@ -10,5 +10,10 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
 
+@app.after_request
+def shutdown_session(response):
+    db_session.remove()
+    return response
+
 def init_db():
     metadata.create_all(bind=engine)
