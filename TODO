@@ -3,4 +3,4 @@
 * Ranges vanish when file is added and page reloaded
 * Only show options that are actually available (dependencies!).
 * Unittests
-* Fix error reporting with result expiration
+* Expire results from celery (using TASK_RESULT_EXPIRES)

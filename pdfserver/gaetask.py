@@ -28,6 +28,11 @@ class TaskResult(db.Model):
     def __repr__(self):
         return '<TaskResult %r>' % self.task_id
 
+    def is_available(self):
+        return (self.available
+                and (datetime.utcnow() - self.created < timedelta(
+                                    seconds=app.config['TASK_RESULT_EXPIRES'])))
+
     @property
     def task_id(self):
         return self.key().id()
@@ -213,11 +218,19 @@ class AsyncResult(object):
     @property
     def result(self):
         task_result = self._get_result_from_db()
+        if not task_result.is_available():
+            raise NotRegistered("Not available anymore")
         return pickle.loads(task_result.result)
 
     @property
     def task_id(self):
         return str(self._task_id)
+
+    def available(self):
+        """Checks if the result hasn't expired yet."""
+        task_result = self._get_result_from_db()
+        return task_result.is_available()
+
 
 def run(name, task_id, *args, **kwargs):
     try:

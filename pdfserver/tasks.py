@@ -6,17 +6,13 @@ task = __import__(app.config['TASK_HANDLER'], fromlist='task').task
 Upload = __import__(app.config['MODELS'], fromlist='Upload').Upload
 
 if app.config['TASK_HANDLER'] == 'celery.decorators':
-    from celery.exceptions import TaskRevokedError, NotRegistered
+    from celery.exceptions import NotRegistered
 
 elif app.config['TASK_HANDLER'] == 'pdfserver.faketask':
     from pdfserver.faketask import NotRegistered
-    class TaskRevokedError(Exception):
-        pass
 
 elif app.config['TASK_HANDLER'] == 'pdfserver.gaetask':
     from pdfserver.gaetask import NotRegistered
-    class TaskRevokedError(Exception):
-        pass
 
 @task
 def handle_pdfs_task(file_ids, page_range_text=None, pages_sheet=1,

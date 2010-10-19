@@ -28,6 +28,11 @@ class TaskResult(object):
     def __repr__(self):
         return '<TaskResult %r>' % self.task_id
 
+    def is_available(self):
+        return (self.available
+                and (datetime.utcnow() - self.created < timedelta(
+                                    seconds=app.config['TASK_RESULT_EXPIRES'])))
+
     @classmethod
     def get_for_task_id(cls, task_id):
         try:
@@ -121,11 +126,18 @@ class FakeAsyncResult(object):
     @property
     def result(self):
         task_result = self._get_result_from_db()
+        if not task_result.is_available():
+            raise NotRegistered("Not available any more")
         return pickle.loads(task_result.result)
 
     @property
     def task_id(self):
         return str(self._task_id)
+
+    def available(self):
+        """Checks if the result hasn't expired yet."""
+        task_result = self._get_result_from_db()
+        return task_result.is_available()
 
 
 class FakeTask(object):

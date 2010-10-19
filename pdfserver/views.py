@@ -12,7 +12,7 @@ from pyPdf import PdfFileWriter, PdfFileReader
 from pdfserver import app, babel
 Upload = __import__(app.config['MODELS'], fromlist='Upload').Upload
 from pdfserver.util import templated
-from pdfserver.tasks import handle_pdfs_task, TaskRevokedError, NotRegistered
+from pdfserver.tasks import handle_pdfs_task, NotRegistered
 
 @babel.localeselector
 def get_locale():
@@ -211,16 +211,16 @@ def download_result(task_id):
     try:
         result = handle_pdfs_task.AsyncResult(task_id)
         if result.ready():
+            if hasattr(result, 'available') and not result.available():
+                raise Gone("Result expired. "
+                        "You probably waited too long to download the file.")
+
             if result.successful():
                 output = result.result
                 return _respond_with_pdf(output.decode('zlib'))
-        else:
-            app.logger.debug("Result not successful: %r" % result)
-            raise InternalServerError(unicode(result.result))
-    except TaskRevokedError:
-        app.logger.debug("Result expired %r" % task_id)
-        raise Gone("Result expired. "
-                   "You probably waited too long to download the file.")
+            else:
+                app.logger.debug("Result not successful: %r" % result)
+                raise InternalServerError(unicode(result.result))
     except NotRegistered:
         app.logger.debug("Result not registered %r" % task_id)
         raise NotFound()
@@ -240,9 +240,6 @@ def remove_download():
     try:
         if hasattr(result, 'forget'):
             result.forget()
-    except TaskRevokedError:
-        app.logger.debug("Result alrady revoked %r" % task_id)
-        pass
     except NotRegistered:
         app.logger.debug("Result not registered %r" % task_id)
         raise NotFound()
