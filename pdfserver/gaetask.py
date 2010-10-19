@@ -90,8 +90,7 @@ class TaskResult(db.Model):
             app.logger.debug("Storing slices failed, result too big")
             raise ValueError("Result too big")
 
-    @property
-    def result(self):
+    def get_result(self):
         buf = StringIO()
         if USE_1MB_WORKAROUND:
             for i in range(BLOB_COUNT):
@@ -106,14 +105,14 @@ class TaskResult(db.Model):
         else:
             return result_blob
 
-    @result.setter
-    def result(self, value):
+    def set_result(self, value):
         app.logger.debug("Setting result with USE_1MB_WORKAROUND=%r" % USE_1MB_WORKAROUND)
         if USE_1MB_WORKAROUND:
             self.unsaved_content = StringIO(value)
         else:
             self.result_blob = db.Blob(value)
 
+    result = property(get_result, set_result)
 
 class TaskResultBlob0(db.Model):
     task_result = db.ReferenceProperty(TaskResult)
