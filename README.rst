@@ -57,6 +57,7 @@ Changes
 0.x
 
 * Support for asynchronous PDF generation
+* Fix max upload size handling for App Engine
 
 0.3
 
