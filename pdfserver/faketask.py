@@ -12,6 +12,7 @@ import pickle
 from sqlalchemy import Table, Column, Integer, LargeBinary, Boolean, DateTime
 from sqlalchemy.orm import mapper
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import and_, or_
 
 from pdfserver.database import metadata, db_session
 from pdfserver import app
@@ -45,7 +46,8 @@ class TaskResult(object):
         """Clean up old results."""
         oldest_keep_datetime = datetime.utcnow() - timedelta(
                                     seconds=app.config['TASK_RESULT_EXPIRES'])
-        cls.query.filter(cls.created < oldest_keep_datetime).delete()
+        cls.query.filter(or_(cls.created < oldest_keep_datetime,
+                             cls.available == False)).delete()
         db_session.commit()
 
     @classmethod
@@ -100,9 +102,6 @@ class FakeAsyncResult(object):
             task_result = TaskResult.get_for_task_id(self.task_id)
 
             if task_result is None:
-                raise NotRegistered()
-            if not task_result.available:
-                # TODO raise a better Exception
                 raise NotRegistered()
 
             self._task_result = task_result
