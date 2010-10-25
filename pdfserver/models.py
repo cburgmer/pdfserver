@@ -30,7 +30,7 @@ class Upload(object):
 
     @classmethod
     def get_for_ids(cls, id_list):
-        app.logger.debug("Getting files %r" % id_list)
+        app.logger.debug("Getting files %r" % (id_list, ))
         return cls.query.filter(cls.id.in_(id_list)).all()
 
     @classmethod

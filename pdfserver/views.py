@@ -44,6 +44,8 @@ def _get_upload():
 
 def _get_uploads():
     file_ids = session.get('file_ids', [])
+    if not file_ids:
+        return []
     return Upload.get_for_ids(file_ids)
 
 @templated('main.html')
@@ -218,7 +220,7 @@ def download_result(task_id):
                 output = result.result
                 return _respond_with_pdf(output.decode('zlib'))
             else:
-                app.logger.debug("Result not successful: %r" % result)
+                app.logger.debug("Result not successful: %r" % result.result)
                 raise InternalServerError(unicode(result.result))
     except NotRegistered:
         app.logger.debug("Result not registered %r" % task_id)
@@ -228,7 +230,6 @@ def download_result(task_id):
 
 def remove_download():
     task_id = request.form.get('task_id', None)
-    app.logger.debug("task_id %r" % task_id)
     if task_id not in session.get('tasks', []):
         app.logger.debug("Valid tasks %r" % session.get('tasks', []))
         raise NotFound()
