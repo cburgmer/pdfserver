@@ -85,6 +85,8 @@ def handle_pdfs(files_handles, page_range_text=None, pages_sheet=1, rotate=0,
             map(lambda page: page.rotateClockwise(rotate), pages)
         if overlay:
             map(lambda page: page.mergePage(overlay), pages)
+        # Compress
+        map(lambda page: page.compressContentStreams(), pages)
 
         map(output.addPage, pages)
 
