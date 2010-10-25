@@ -4,8 +4,7 @@ import re
 from flask import g, request, Response, session, render_template
 from flask import abort, redirect, url_for, jsonify
 from werkzeug import wrap_file
-from werkzeug.exceptions import InternalServerError, Unauthorized, Gone, \
-                                NotFound
+from werkzeug.exceptions import InternalServerError, Gone, NotFound
 
 from pyPdf import PdfFileWriter, PdfFileReader
 
@@ -184,7 +183,7 @@ def result_page(task_id):
     """
     if task_id not in session.get('tasks', []):
         app.logger.debug("Valid tasks %r" % session.get('tasks', []))
-        raise Unauthorized()
+        raise NotFound()
 
     param = {'task_id': task_id,
              'ready': handle_pdfs_task.AsyncResult(task_id).ready()}
@@ -193,7 +192,7 @@ def result_page(task_id):
 def check_result(task_id):
     if task_id not in session.get('tasks', []):
         app.logger.debug("Valid tasks %r" % session.get('tasks', []))
-        raise Unauthorized()
+        raise NotFound()
 
     result = handle_pdfs_task.AsyncResult(task_id)
     if result.ready():
@@ -206,7 +205,7 @@ def check_result(task_id):
 def download_result(task_id):
     if task_id not in session.get('tasks', []):
         app.logger.debug("Valid tasks %r" % session.get('tasks', []))
-        raise Unauthorized()
+        raise NotFound()
 
     try:
         result = handle_pdfs_task.AsyncResult(task_id)
@@ -232,7 +231,7 @@ def remove_download():
     app.logger.debug("task_id %r" % task_id)
     if task_id not in session.get('tasks', []):
         app.logger.debug("Valid tasks %r" % session.get('tasks', []))
-        raise Unauthorized()
+        raise NotFound()
 
     result = handle_pdfs_task.AsyncResult(task_id)
     session['tasks'].remove(task_id)
