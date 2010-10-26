@@ -58,6 +58,7 @@ Changes
 
 * Support for asynchronous PDF generation
 * Fix max upload size handling for App Engine
+* Unittests
 
 0.3
 

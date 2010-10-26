@@ -169,6 +169,45 @@ class DeleteTestCase(PdfserverTestCase):
 
         self.assertEquals(Upload.query.count(), 0)
 
+    def test_remove_does_not_affect_others(self):
+        from pdfserver.models import Upload
+        assert Upload.query.count() == 0
+
+        rv = self.app.post('/upload',
+                           data={'file': (self.get_pdf_stream(), 'test.pdf')},
+                           follow_redirects=True)
+
+        # Get file id first upload
+        ids = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
+                         r'<input type="hidden" name="id" value="(\d+)"/>',
+                         rv.data)
+        self.assert_(len(ids) == 1)
+
+        rv = self.app.post('/upload',
+                           data={'file': (self.get_pdf_stream(), 'test2.pdf')},
+                           follow_redirects=True)
+        # Get file id second upload
+        ids2 = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
+                         r'<input type="hidden" name="id" value="(\d+)"/>',
+                         rv.data)
+        ids2.remove(ids[0])
+        self.assert_(len(ids2) == 1)
+
+        self.assertEquals(Upload.query.count(), 2)
+
+        # Delete first file
+        rv = self.app.post('/delete',
+                           data={'delete': 'delete', 'id': ids[0]},
+                           follow_redirects=True)
+
+        self.assertEquals(rv.status_code, 200)
+
+        # Make sure second file still exists
+        self.assertEquals(Upload.query.count(), 1)
+        self.assert_(Upload.get_for_id(ids2[0]) is not None)
+
+        self.clean_up()
+
     def test_delete_non_existant_fails(self):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
@@ -361,6 +400,58 @@ class DownloadTestCase(DownloadMixin, PdfserverTestCase):
         # Download
         rv = self.app.get(download_url)
         self.assertEquals(rv.status_code, 410)
+
+        self.clean_up()
+
+
+class CombineTestCase(DownloadMixin, PdfserverTestCase):
+
+    @classmethod
+    def replace_text(cls, page, text, replace):
+        # HACK
+        from pyPdf.pdf import ContentStream, PageObject
+        from pyPdf.generic import TextStringObject, NameObject
+        content = ContentStream(page["/Contents"].getObject(), page.pdf)
+        for idx in range(len(content.operations)):
+            operands, operator = content.operations[idx]
+            if operator == 'Tj':
+                operands[0] = TextStringObject(operands[0].replace(text,
+                                                                   replace))
+        new_page = PageObject.createBlankPage(page.pdf)
+        new_page.mergePage(page)
+        new_page[NameObject('/Contents')] = content
+        return new_page
+
+    def test_page_ranges(self):
+        pdf = PdfFileReader(self.get_pdf_stream())
+
+        # Build a document with twenty pages
+        output = PdfFileWriter()
+        page = pdf.getPage(0)
+        for i in range(1, 21):
+            new_page = CombineTestCase.replace_text(page, 'Test', 'Test %d' % i)
+            output.addPage(new_page)
+        assert output.getNumPages() == 20
+
+        buf = StringIO()
+        output.write(buf)
+        buf.seek(0)
+
+        rv = self.app.post('/upload',
+                           data={'file': (buf, 'test.pdf')})
+
+        rv = self.combine_and_download(pages_1='-5, 10, 12-14, 18-')
+
+        pdf_download = PdfFileReader(StringIO(rv.data))
+
+        # Test ranges
+        ranges = [1, 2, 3, 4, 5, 10, 12, 13, 14, 18, 19, 20]
+
+        self.assert_(all(
+            (('Test %d' % page) in pdf_download.getPage(i).extractText())
+                        for i, page in enumerate(ranges)))
+
+        self.assertEquals(pdf_download.getNumPages(), len(ranges))
 
         self.clean_up()
 
