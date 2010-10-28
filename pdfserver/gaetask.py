@@ -56,6 +56,8 @@ class TaskResult(db.Model):
         """Clean up old results."""
         oldest_keep_datetime = datetime.utcnow() - timedelta(
                                     seconds=app.config['TASK_RESULT_EXPIRES'])
+        for task_result in cls.all().filter('available =', False):
+            TaskResult.delete(task_result)
         for task_result in cls.all().filter('created <', oldest_keep_datetime):
             TaskResult.delete(task_result)
 
@@ -191,9 +193,6 @@ class AsyncResult(object):
             task_result = TaskResult.get_for_task_id(long(self._task_id))
 
             if task_result is None:
-                raise NotRegistered()
-            if not task_result.available:
-                # TODO raise a better Exception
                 raise NotRegistered()
 
             self._task_result = task_result

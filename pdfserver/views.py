@@ -4,8 +4,7 @@ import re
 from flask import g, request, Response, session, render_template
 from flask import abort, redirect, url_for, jsonify
 from werkzeug import wrap_file
-from werkzeug.exceptions import InternalServerError, Unauthorized, Gone, \
-                                NotFound
+from werkzeug.exceptions import InternalServerError, Gone, NotFound
 
 from pyPdf import PdfFileWriter, PdfFileReader
 
@@ -45,6 +44,8 @@ def _get_upload():
 
 def _get_uploads():
     file_ids = session.get('file_ids', [])
+    if not file_ids:
+        return []
     return Upload.get_for_ids(file_ids)
 
 @templated('main.html')
@@ -184,7 +185,7 @@ def result_page(task_id):
     """
     if task_id not in session.get('tasks', []):
         app.logger.debug("Valid tasks %r" % session.get('tasks', []))
-        raise Unauthorized()
+        raise NotFound()
 
     param = {'task_id': task_id,
              'ready': handle_pdfs_task.AsyncResult(task_id).ready()}
@@ -193,7 +194,7 @@ def result_page(task_id):
 def check_result(task_id):
     if task_id not in session.get('tasks', []):
         app.logger.debug("Valid tasks %r" % session.get('tasks', []))
-        raise Unauthorized()
+        raise NotFound()
 
     result = handle_pdfs_task.AsyncResult(task_id)
     if result.ready():
@@ -206,7 +207,7 @@ def check_result(task_id):
 def download_result(task_id):
     if task_id not in session.get('tasks', []):
         app.logger.debug("Valid tasks %r" % session.get('tasks', []))
-        raise Unauthorized()
+        raise NotFound()
 
     try:
         result = handle_pdfs_task.AsyncResult(task_id)
@@ -219,7 +220,7 @@ def download_result(task_id):
                 output = result.result
                 return _respond_with_pdf(output.decode('zlib'))
             else:
-                app.logger.debug("Result not successful: %r" % result)
+                app.logger.debug("Result not successful: %r" % result.result)
                 raise InternalServerError(unicode(result.result))
     except NotRegistered:
         app.logger.debug("Result not registered %r" % task_id)
@@ -229,10 +230,9 @@ def download_result(task_id):
 
 def remove_download():
     task_id = request.form.get('task_id', None)
-    app.logger.debug("task_id %r" % task_id)
     if task_id not in session.get('tasks', []):
         app.logger.debug("Valid tasks %r" % session.get('tasks', []))
-        raise Unauthorized()
+        raise NotFound()
 
     result = handle_pdfs_task.AsyncResult(task_id)
     session['tasks'].remove(task_id)

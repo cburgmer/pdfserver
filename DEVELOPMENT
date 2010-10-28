@@ -23,3 +23,19 @@ update the scripts do::
 Edit the download links in ``Makefile``, and then::
 
     $ make deploy
+
+
+Unittests
+=========
+For pdfserver unittests run::
+
+    $ python pdfserver/tests.py
+
+To show coverage rendered as HTML run::
+
+    $ nosetests pdfserver --with-coverage --cover-package pdfserver \
+      --cover-html --cover-html-dir coverage
+
+Then point your browser to ./coverage/index.html.
+
+You need to install nose and coverage for the last step.
