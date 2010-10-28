@@ -1,5 +1,6 @@
 #filetable { width: 80%; border-spacing: 0; }
-#files tr { height: 20px; background-color:#eef; cursor: default; }
+#files tr.odd { height: 50px; width: 100%; background-color:#e9e9f9; cursor: default; }
+#files tr.even { height: 50px; width: 100%; background-color:#eef; cursor: default; }
 #files * .text { font-size: 1.2em; }
 #filetable * th { border: 1px; border-style: none none solid none; }
 #filetable * td { padding: 2px; }

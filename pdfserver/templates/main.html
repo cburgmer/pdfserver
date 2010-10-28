@@ -26,9 +26,21 @@
         "{{ _("There are only maximum {0} pages.") }}"
     );
     $(function() {
-        $("#files").sortable();
+        function cycle_mark_uploads() {
+            $.each($("#files tr"), function(idx, item) {
+                console.log(idx, item);
+                if (idx % 2) {
+                    $(item).attr('class', 'odd');
+                } else {
+                    $(item).attr('class', 'even');
+                }
+            });
+        }
+        cycle_mark_uploads();
+        $("#files").sortable({
+            stop: function(event, ui) { cycle_mark_uploads() },
+        });
         $(".noselection").disableSelection();
-        // delete all popop dialog
         $("#deleteall").dialog({
             autoOpen: false,
             resizable: false,
@@ -219,7 +231,7 @@
     {% if uploads %}
     <tbody id="files">
     {% for upload in uploads %}
-        <tr class="{{ loop.cycle('odd', 'even') }}" id="file_{{ loop.index }}">
+        <tr class="{{ loop.cycle('even', 'odd') }}" id="file_{{ loop.index }}">
             <td><span class="noselection ui-icon ui-icon-arrowthick-2-n-s"></span></td>
             <td><span class="noselection text">{{upload.filename}}</span></td>
             <td><span class="noselection text">{% if upload.size %}{{upload.size|filesizeformat}}{% endif %}</span></td>
