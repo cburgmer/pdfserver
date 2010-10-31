@@ -76,8 +76,6 @@
             modal: true,
             buttons: {
                 '{{ _("Delete all files") }}': function() {
-                    // TODO HACK Javascript form.submit() doesn't allow
-                    //   transmitting which button should've been clicked
                     $.ajax({
                         type : 'POST',
                         dataType : 'json',
