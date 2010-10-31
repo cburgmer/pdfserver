@@ -60,7 +60,7 @@ class PdfserverTestCase(unittest.TestCase):
 class UploadTestCase(PdfserverTestCase):
 
     def test_upload_returns_redirect(self):
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         self.assertEquals(rv.status_code, 302)
@@ -68,7 +68,7 @@ class UploadTestCase(PdfserverTestCase):
         self.clean_up()
 
     def test_upload_shows_resulting_file(self):
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')},
                            follow_redirects=True)
 
@@ -79,7 +79,7 @@ class UploadTestCase(PdfserverTestCase):
     def test_upload_creates_file(self):
         from pdfserver.models import Upload
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         upload = Upload.query.filter(Upload.filename == 'test.pdf').one()
@@ -92,7 +92,7 @@ class UploadTestCase(PdfserverTestCase):
 
         assert Upload.query.count() == 0
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         self.assertEquals(Upload.query.count(), 1)
@@ -105,13 +105,13 @@ class UploadTestCase(PdfserverTestCase):
         assert Upload.query.count() == 0
 
         with self.app as c:
-            rv = c.post('/upload',
+            rv = c.post('/form',
                         data={'file': (self.get_pdf_stream(), 'test.pdf')},
                         follow_redirects=True)
-            rv = c.post('/upload',
+            rv = c.post('/form',
                         data={'file': (self.get_pdf_stream(), 'test2.pdf')},
                         follow_redirects=True)
-            rv = c.post('/upload',
+            rv = c.post('/form',
                         data={'file': (self.get_pdf_stream(), 'test3.pdf')},
                         follow_redirects=True)
 
@@ -134,7 +134,7 @@ class DeleteTestCase(PdfserverTestCase):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')},
                            follow_redirects=True)
 
@@ -156,15 +156,15 @@ class DeleteTestCase(PdfserverTestCase):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
 
-        self.app.post('/upload',
+        self.app.post('/form',
                       data={'file': (self.get_pdf_stream(), 'test.pdf')})
-        self.app.post('/upload',
+        self.app.post('/form',
                       data={'file': (self.get_pdf_stream(), 'test2.pdf')})
 
         self.assertEquals(Upload.query.count(), 2)
 
-        rv = self.app.post('/deleteall',
-                           data={'delete': 'delete'},
+        rv = self.app.post('/form',
+                           data={'form_action': 'deleteall'},
                            follow_redirects=True)
 
         self.assertEquals(rv.status_code, 200)
@@ -175,7 +175,7 @@ class DeleteTestCase(PdfserverTestCase):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')},
                            follow_redirects=True)
 
@@ -185,7 +185,7 @@ class DeleteTestCase(PdfserverTestCase):
                          rv.data)
         self.assert_(len(ids) == 1)
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test2.pdf')},
                            follow_redirects=True)
         # Get file id second upload
@@ -231,13 +231,13 @@ class InteractionTestCase(PdfserverTestCase):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
 
-        self.app.post('/upload',
+        self.app.post('/form',
                       data={'file': (self.get_pdf_stream(), 'test.pdf')})
         ids = [upload.id for upload in Upload.query.all()]
         self.assertEquals(len(ids), 1)
         app_id = ids[0]
 
-        self.app2.post('/upload',
+        self.app2.post('/form',
                        data={'file': (self.get_pdf_stream(), 'test.pdf')})
         ids = [upload.id for upload in Upload.query.all()
                          if upload.id != app_id]
@@ -268,13 +268,13 @@ class InteractionTestCase(PdfserverTestCase):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
 
-        self.app.post('/upload',
+        self.app.post('/form',
                       data={'file': (self.get_pdf_stream(), 'test.pdf')})
         ids = [upload.id for upload in Upload.query.all()]
         self.assertEquals(len(ids), 1)
         app_id = ids[0]
 
-        self.app2.post('/upload',
+        self.app2.post('/form',
                        data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Delete upload from app1 in app2
@@ -301,9 +301,11 @@ class DownloadMixin(object):
         TaskResult.commit()
 
     def combine_and_download(self, **data):
+        options = {'form_action': 'combine'}
+        options.update(data)
         # Start build
-        rv = self.app.post('/combine',
-                           data=data,
+        rv = self.app.post('/form',
+                           data=options,
                            follow_redirects=True)
 
         self.assertEquals(rv.status_code, 200)
@@ -326,7 +328,7 @@ class DownloadTestCase(DownloadMixin, PdfserverTestCase):
         pdf = PdfFileReader(self.get_pdf_stream())
         assert 'Test' in pdf.getPage(0).extractText()
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         rv = self.combine_and_download()
@@ -349,11 +351,11 @@ class DownloadTestCase(DownloadMixin, PdfserverTestCase):
         self.clean_up()
 
     def test_download_removed_fails(self):
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Start build
-        rv = self.app.post('/combine',
+        rv = self.app.post('/form', data={'form_action': 'combine'},
                            follow_redirects=True)
 
         self.assertEquals(rv.status_code, 200)
@@ -380,11 +382,11 @@ class DownloadTestCase(DownloadMixin, PdfserverTestCase):
         from pdfserver.faketask import TaskResult
         assert TaskResult.query.count() == 0
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Start build
-        rv = self.app.post('/combine',
+        rv = self.app.post('/form', data={'form_action': 'combine'},
                            follow_redirects=True)
 
         self.assertEquals(rv.status_code, 200)
@@ -448,7 +450,7 @@ class CombineTestCase(DownloadMixin, PdfserverTestCase):
         output.write(buf)
         buf.seek(0)
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (buf, 'test.pdf')})
 
         rv = self.combine_and_download(pages_1='-5, 10, 12-14, 18-')
@@ -480,7 +482,7 @@ class CombineTestCase(DownloadMixin, PdfserverTestCase):
                 new_pdf.write(buf)
                 buf.seek(0)
 
-                c.post('/upload', data={'file': (buf, 'test_%d.pdf' % i)})
+                c.post('/form', data={'file': (buf, 'test_%d.pdf' % i)})
 
             # Re-arrange uploads and download combined files
             random.shuffle(order)
@@ -507,7 +509,7 @@ class WatermarkTestCase(DownloadMixin, PdfserverTestCase):
 
     def setUp(self):
         super(WatermarkTestCase, self).setUp()
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
     def test_watermark(self):
@@ -532,7 +534,7 @@ class RotationTestCase(DownloadMixin, PdfserverTestCase):
         pdf = PdfFileReader(self.get_pdf_stream())
         assert 'Test' in pdf.getPage(0).extractText()
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         rv = self.combine_and_download(rotate='90')
@@ -547,7 +549,7 @@ class RotationTestCase(DownloadMixin, PdfserverTestCase):
         pdf = PdfFileReader(self.get_pdf_stream())
         assert 'Test' in pdf.getPage(0).extractText()
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Start build without rotation
@@ -567,7 +569,7 @@ class RotationTestCase(DownloadMixin, PdfserverTestCase):
         pdf = PdfFileReader(self.get_pdf_stream())
         assert 'Test' in pdf.getPage(0).extractText()
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Start build without rotation
@@ -581,7 +583,7 @@ class RotationTestCase(DownloadMixin, PdfserverTestCase):
         self.clean_up()
 
         # Upload rotated
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (StringIO(content_half), 'test.pdf')})
 
         # Start build with rotation
@@ -603,7 +605,7 @@ class NPagesTestCase(DownloadMixin, PdfserverTestCase):
         assert 'Test' in pdf.getPage(0).extractText()
         assert pdf.getNumPages() == 1
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         rv = self.combine_and_download(pages_sheet='2')
@@ -626,7 +628,7 @@ class NPagesTestCase(DownloadMixin, PdfserverTestCase):
         output.write(buf)
         buf.seek(0)
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (buf, 'test.pdf')})
 
         rv = self.combine_and_download(pages_sheet='2')
@@ -644,9 +646,9 @@ class NPagesTestCase(DownloadMixin, PdfserverTestCase):
         assert 'Test' in pdf.getPage(0).extractText()
         assert pdf.getNumPages() == 1
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
-        rv = self.app.post('/upload',
+        rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test2.pdf')})
 
         rv = self.combine_and_download(pages_sheet='2')

@@ -11,4 +11,9 @@
 .footer a:active { text-decoration:underline; }
 #moreoptions { background-color:#efe; }
 #moreoptions td { border: 1px; border-style: solid none none; padding: 6px; }
+#combinefooter td { padding: 6px; }
+#uploadfooter { background-color:#eef; }
+#uploadfooter td { border: 1px; border-style: solid none none; padding: 6px; }
 #moreoptions td span { display: inline-block; height: 100%; vertical-align: top; margin: 3px; margin-right: 10px; }
+#nouploads { background-color: #fff; }
+#nouploads td { padding: 1em; font-style: italic; }

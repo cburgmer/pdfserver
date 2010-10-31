@@ -27,16 +27,14 @@
     );
     $(function() {
         function cycle_mark_uploads() {
-            $.each($("#files tr"), function(idx, item) {
-                console.log(idx, item);
+            $.each($("#files tr.file"), function(idx, item) {
                 if (idx % 2) {
-                    $(item).attr('class', 'odd');
+                    $(item).attr('class', 'file odd');
                 } else {
-                    $(item).attr('class', 'even');
+                    $(item).attr('class', 'file even');
                 }
             });
         }
-        cycle_mark_uploads();
         $("#files").sortable({
             stop: function(event, ui) { cycle_mark_uploads() },
         });
@@ -47,7 +45,20 @@
             modal: true,
             buttons: {
                 '{{ _("Delete all files") }}': function() {
-                    document.forms['deleteall'].submit();
+                    // TODO HACK Javascript form.submit() doesn't allow
+                    //   transmitting which button should've been clicked
+                    $.ajax({
+                        type : 'POST',
+                        dataType : 'json',
+                        url : '{{ url_for('handle_form') }}',
+                        data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize') + '&form_action=deleteall&delete=delete',
+                        error: function(req, st, err) {
+                            location.reload();
+                        },
+                        success: function(data, textStatus, request) {
+                            location.reload();
+                        }
+                    });
                     $(this).dialog('close');
                 },
                 '{{ _("Cancel") }}': function() {
@@ -93,6 +104,10 @@
             label: "{{ _("All") }}",
             text: true,
         });
+        $(".deleteallbutton").click(function() {
+            $('#deleteall').dialog('open');
+            return false;
+        });
         $("#combinebutton").button({
             icons: {
                 primary: 'ui-icon-document'
@@ -113,14 +128,16 @@
             label: "{{ _("Less options") }}",
             text: true
         });
+        // Upload action
         $("#uploadbutton").button({
             icons: {
                 primary: 'ui-icon-plusthick'
             },
             text: true
         });
+        // Combine action
         $("#filesform").validate();
-        $('#filesform').submit(function() {
+        $('#combinebutton').click(function() {
             function test_pdf_finished(check_url) {
                 if (pdfgenerated_check_interval <= 0) {
                     return
@@ -158,8 +175,8 @@
             $.ajax({
                 type : 'POST',
                 dataType : 'json',
-                url : '{{ url_for('combine_pdfs') }}',
-                data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize'),
+                url : '{{ url_for('handle_form') }}',
+                data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize') + '&form_action=combine',
                 error: function(req, st, err) {
                     ("#pdfgenerated_msg").html('{{ _("An error occurred: ") }}' + st);
                 },
@@ -175,8 +192,7 @@
 <h1>{{ _("Welcome to pdfserver") }}</h1>
 <p>{{ _("Upload PDF files, drag them into the right order and recombine pages.") }}</p>
 
-<h3>{{ _("PDF files") }}</h3>
-<form action="{{ url_for('combine_pdfs') }}" id="filesform" name="combine" method="post">
+<form action="{{ url_for('handle_form') }}" id="filesform" name="action_form" method="post" enctype="multipart/form-data" accept-charset="utf-8">
 <table id="filetable">
     <thead>
     <tr>
@@ -189,6 +205,14 @@
     </tr>
     </thead>
     <tfoot>
+        <tr id="uploadfooter">
+            <td></td>
+            <td colspan="5">
+                <input type="file" name="file" id="id_file" size="30"/>
+                <input type="hidden" name="uploadtype" id="uploadtype" value=""/>
+                <button type="submit" id="uploadbutton" name="form_action" value="upload">{{ _("Upload") }}</button>
+            </td>
+        </tr>
         <tr id="moreoptions">
             <td colspan="6">
                 <span>
@@ -217,15 +241,15 @@
                 </span>
             </td>
         </tr>
-        <tr>
+        <tr id="combinefooter">
             <td colspan="2"><span style="font-size: 1.1em;">
             <a href="#" id="moreoptionsbutton" onclick="$('#moreoptions').fadeIn();$('#moreoptionsbutton').hide();$('#lessoptionsbutton').show();"></a>
             <a href="#" style="display: none;" id="lessoptionsbutton" onclick="$('#moreoptions').fadeOut();$('#lessoptionsbutton').hide();$('#moreoptionsbutton').show();"></a>
             </span></td>
             <td colspan="3" style="text-align: right;"><span style="font-size: 1.1em;">
-            <button type="submit" id="combinebutton"{% if uploads %}{% else %} onclick="return false"{% endif %}>{{ _("Combine &amp; open") }}</button>
+            <button type="submit" name="form_action" value="combine" id="combinebutton"{% if uploads %}{% else %} onclick="return false"{% endif %}>{{ _("Combine &amp; open") }}</button>
             </span></td>
-            <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton"{% if uploads %} onclick="$('#deleteall').dialog('open'); return false"{% else %} onclick="return false"{% endif %}></a></span></td>
+            <td><span style="font-size: 1.1em;"><button type="submit" name="form_action" value="confirm_deleteall" id="deleteallbutton" class="deleteallbutton">{{ _("Delete all files") }}</button></span></td>
         </tr>
     </tfoot>
     {% if uploads %}
@@ -245,21 +269,14 @@
     </tbody>
     {% else %}
     <tbody>
-        <tr>
-            <td colspan="6"><span style="font-style:italic;">{{ _("There are no uploaded files at present.") }}</span></td>
+        <tr id="nouploads">
+            <td colspan="6">{{ _("There are no uploaded files at present.") }}</td>
         </tr>
     </tbody>
     {% endif %}
 </table>
 <script type="text/javascript">$('#moreoptions').hide();</script>
 </form>
-<div id="upload">
-    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" accept-charset="utf-8">
-        <h3>{{ _("Upload a new file") }}</h3>
-        <input type="file" name="file" id="id_file" />
-        <button type="submit" id="uploadbutton">{{ _("Upload") }}</button>
-    </form>
-</div>
 {% if uploads %}
 <!-- HTML wouldn't allow us to place a form inside a form, so put basis here and call by Javascript -->
 {% for upload in uploads %}
@@ -270,20 +287,8 @@
 {% endfor %}
 {% endif %}
 
-<noscript>
-<!-- Allow at least deletion of all files if Javascript isn't around -->
-<div>
-    <h3>{{ _("Delete") }}</h3>
-    <form action="{{ url_for('confirm_delete_all') }}" method="post">
-        <input type="submit" value="{{ _("Delete all files") }}"/>
-    </form>
-</div>
-</noscript>
 <div id="deleteall" style="display: none;" title="{{ _("Confirm deletion") }}">
         <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>{{ _("All files will be deleted. Are you sure?") }}</p>
-        <form action="{{ url_for('delete_all') }}" name="deleteall" method="post">
-        <input type="hidden" name="delete" value="Delete all"/>
-        </form>
 </div>
 <div id="pdfgenerated" style="display: none;" title="{{ _("Generating PDF") }}">
     <p>

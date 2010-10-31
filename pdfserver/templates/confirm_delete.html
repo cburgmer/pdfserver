@@ -7,7 +7,7 @@
 
 <p>{{ _("Are you sure you want to delete this file?") }}</p>
 
-<form action="{{ url_for('delete') }}" method="post">
+<form action="{{ url_for('handle_form') }}" method="post">
 
 <table id="upload_table">
     <thead>
@@ -26,7 +26,7 @@
     </tbody>
 </table>
 <input type="hidden" name="id" value="{{upload.id}}"/>
-<input type="submit" name="delete" value="Delete"/>
-<input type="submit" name="cancel" value="Cancel"/>
+<button type="submit" name="form_action" value="deleteall" class="deleteallbutton">{{ _("Delete all files") }}</button>
+<button type="submit" name="form_action" value="cancel">{{ _("Cancel") }}</button>
 </form>
 {% endblock %}

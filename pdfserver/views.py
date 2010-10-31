@@ -4,7 +4,8 @@ import re
 from flask import g, request, Response, session, render_template
 from flask import abort, redirect, url_for, jsonify
 from werkzeug import wrap_file
-from werkzeug.exceptions import InternalServerError, Gone, NotFound
+from werkzeug.exceptions import InternalServerError, MethodNotAllowed, Gone, \
+                                NotFound
 
 from pyPdf import PdfFileWriter, PdfFileReader
 
@@ -53,6 +54,20 @@ def main():
     files = _get_uploads()
     return {'uploads': files}
 
+def handle_form():
+    action = request.form.get('form_action', 'upload')
+    app.logger.debug(action)
+    if action == 'upload':
+        return upload_file()
+    elif action == 'confirm_deleteall':
+        return confirm_delete_all()
+    elif action == 'deleteall':
+        return delete_all()
+    elif action == 'combine':
+        return combine_pdfs()
+    else:
+        raise MethodNotAllowed()
+
 def upload_file():
     if 'file' in request.files and request.files['file']:
         app.logger.info("Upload form is valid")
@@ -97,13 +112,13 @@ def confirm_delete_all():
     return {'uploads': files}
 
 def delete_all():
-    if request.form.get('delete', False):
-        files = _get_uploads()
+    app.logger.debug("Deleting all files")
+    files = _get_uploads()
 
-        session['file_ids'] = []
-        for upload in files:
-            Upload.delete(upload)
-        Upload.commit()
+    session['file_ids'] = []
+    for upload in files:
+        Upload.delete(upload)
+    Upload.commit()
 
     return redirect(url_for('main'))
 
