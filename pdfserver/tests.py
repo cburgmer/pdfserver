@@ -40,6 +40,12 @@ class PdfserverTestCase(unittest.TestCase):
                                 .decode('base64')\
                                 .decode('zlib'))
 
+    def extract_ids_from_main_page(self, data):
+        ids = re.findall(r'<tr class="(?:[^"]+ )?file(?: [^"]+)?" '
+                         r'id="file_(\d+)">',
+                         data)
+        return map(int, ids)
+
     def clean_up(self):
         from pdfserver.models import Upload
         Upload.query.delete()
@@ -116,10 +122,7 @@ class UploadTestCase(PdfserverTestCase):
                         follow_redirects=True)
 
             # Get file ids
-            ids = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                            r'<input type="hidden" name="id" value="(\d+)"/>',
-                            rv.data)
-            ids = map(int, ids)
+            ids = self.extract_ids_from_main_page(rv.data)
             self.assertEquals(sorted(ids), sorted(session['file_ids']))
 
             self.assertEquals(Upload.query.filter(Upload.id.in_(ids)).count(),
@@ -139,13 +142,11 @@ class DeleteTestCase(PdfserverTestCase):
                            follow_redirects=True)
 
         # Get file id
-        ids = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                         r'<input type="hidden" name="id" value="(\d+)"/>',
-                         rv.data)
+        ids = self.extract_ids_from_main_page(rv.data)
         self.assert_(len(ids) == 1)
 
         rv = self.app.post('/delete',
-                           data={'delete': 'delete', 'id': ids[0]},
+                           data={'id': ids[0]},
                            follow_redirects=True)
 
         self.assertEquals(rv.status_code, 200)
@@ -180,18 +181,14 @@ class DeleteTestCase(PdfserverTestCase):
                            follow_redirects=True)
 
         # Get file id first upload
-        ids = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                         r'<input type="hidden" name="id" value="(\d+)"/>',
-                         rv.data)
+        ids = self.extract_ids_from_main_page(rv.data)
         self.assert_(len(ids) == 1)
 
         rv = self.app.post('/form',
                            data={'file': (self.get_pdf_stream(), 'test2.pdf')},
                            follow_redirects=True)
         # Get file id second upload
-        ids2 = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                         r'<input type="hidden" name="id" value="(\d+)"/>',
-                         rv.data)
+        ids2 = self.extract_ids_from_main_page(rv.data)
         ids2.remove(ids[0])
         self.assert_(len(ids2) == 1)
 
@@ -248,18 +245,12 @@ class InteractionTestCase(PdfserverTestCase):
 
         # Get file id for app 1
         rv = self.app.get('/')
-        ids = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                         r'<input type="hidden" name="id" value="(\d+)"/>',
-                         rv.data)
-        ids = map(int, ids)
+        ids = self.extract_ids_from_main_page(rv.data)
         self.assertEquals(ids, [app_id])
 
         # Get file id for app 2
         rv = self.app2.get('/')
-        ids = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                         r'<input type="hidden" name="id" value="(\d+)"/>',
-                         rv.data)
-        ids = map(int, ids)
+        ids = self.extract_ids_from_main_page(rv.data)
         self.assertEquals(ids, [app2_id])
 
         self.clean_up()
@@ -451,9 +442,12 @@ class CombineTestCase(DownloadMixin, PdfserverTestCase):
         buf.seek(0)
 
         rv = self.app.post('/form',
-                           data={'file': (buf, 'test.pdf')})
+                           data={'file': (buf, 'test.pdf')},
+                           follow_redirects=True)
 
-        rv = self.combine_and_download(pages_1='-5, 10, 12-14, 18-')
+        ids = self.extract_ids_from_main_page(rv.data)
+        pages_kw = 'pages_%d' % ids[0]
+        rv = self.combine_and_download(**{pages_kw: '-5, 10, 12-14, 18-'})
 
         pdf_download = PdfFileReader(StringIO(rv.data))
 
