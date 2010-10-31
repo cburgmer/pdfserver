@@ -42,7 +42,8 @@ class PdfserverTestCase(unittest.TestCase):
 
     def clean_up(self):
         from pdfserver.models import Upload
-        Upload.query.delete()
+        for upload in Upload.query.all():
+            Upload.delete(upload)
         Upload.commit()
 
     def setUp(self):
@@ -55,6 +56,9 @@ class PdfserverTestCase(unittest.TestCase):
         self.app = pdfserver.app.test_client()
         from pdfserver import models, faketask, database
         database.init_db()
+
+    def tearDown(self):
+        self.clean_up()
 
 
 class UploadTestCase(PdfserverTestCase):
