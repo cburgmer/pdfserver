@@ -2,8 +2,10 @@ import unittest
 import os
 import re
 import difflib
+import random
 from StringIO import StringIO
 
+import werkzeug
 from flask import session
 
 from pyPdf import PdfFileReader, PdfFileWriter
@@ -422,6 +424,15 @@ class CombineTestCase(DownloadMixin, PdfserverTestCase):
         new_page[NameObject('/Contents')] = content
         return new_page
 
+    @classmethod
+    def clone_document(cls, pdf, text, replace):
+        output = PdfFileWriter()
+        for page_idx in range(pdf.getNumPages()):
+            page = pdf.getPage(page_idx)
+            new_page = cls.replace_text(page, text, replace)
+            output.addPage(new_page)
+        return output
+
     def test_page_ranges(self):
         pdf = PdfFileReader(self.get_pdf_stream())
 
@@ -452,6 +463,42 @@ class CombineTestCase(DownloadMixin, PdfserverTestCase):
                         for i, page in enumerate(ranges)))
 
         self.assertEquals(pdf_download.getNumPages(), len(ranges))
+
+        self.clean_up()
+
+    def test_file_order(self):
+        pdf = PdfFileReader(self.get_pdf_stream())
+
+        with self.app as c:
+            # Upload 20 documents
+            order = range(1, 20)
+            for i in order:
+                new_pdf = CombineTestCase.clone_document(pdf, 'Test',
+                                                         'Test %d' % i)
+
+                buf = StringIO()
+                new_pdf.write(buf)
+                buf.seek(0)
+
+                c.post('/upload', data={'file': (buf, 'test_%d.pdf' % i)})
+
+            # Re-arrange uploads and download combined files
+            random.shuffle(order)
+
+            file_ids = session['file_ids']
+            options = werkzeug.MultiDict([('file[]', i) for i in order]
+                                        + [('upload_id_%d' % j, id)
+                                            for j, id in enumerate(file_ids)])
+            rv = self.combine_and_download(**options)
+
+        pdf_download = PdfFileReader(StringIO(rv.data))
+
+        # Test order
+        self.assert_(all(
+                    (('Test %d' % idx) in pdf_download.getPage(i).extractText())
+                    for i, idx in enumerate(order)))
+
+        self.assertEquals(pdf_download.getNumPages(), len(order))
 
         self.clean_up()
 

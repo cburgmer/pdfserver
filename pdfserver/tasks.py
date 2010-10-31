@@ -17,7 +17,11 @@ elif app.config['TASK_HANDLER'] == 'pdfserver.gaetask':
 @task
 def handle_pdfs_task(file_ids, page_range_text=None, pages_sheet=1,
                      rotate=0, overlay=None):
-    files_handles = Upload.get_for_ids(file_ids)
+    uploads = Upload.get_for_ids(file_ids)
+    # Bring uploads into order specified by file_ids
+    uploads_map = dict((upload.id, upload) for upload in uploads)
+    files_handles = [uploads_map[id] for id in file_ids if id in uploads_map]
+
     output = handle_pdfs(files_handles, page_range_text=page_range_text,
                          pages_sheet=pages_sheet, rotate=rotate,
                          overlay=overlay)
