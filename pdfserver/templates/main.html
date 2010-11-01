@@ -47,20 +47,21 @@
     $(window).load(function() {
         $("#upload_target").load(function() {
             $("#upload-progress").hide();
-            $.ajax({
-                type : 'POST',
-                dataType : 'json',
-                url: '{{ url_for('main_table') }}',
-                data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize'),
-                success: function(data) {
-                    update_files_table(data);
-                    $.jnotify('{{ _("Successfully upload file") }}');
-                },
-                error: function(req, st, err) {
-                    $.jnotify('{{ _("Error updating file list: ") }}' + st, "error", true);
-                },
-            });
             if (!window.frames["upload_target"].document.getElementById('content')) {
+                $.ajax({
+                    type : 'POST',
+                    dataType : 'json',
+                    url: '{{ url_for('main_table') }}',
+                    data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize'),
+                    success: function(data) {
+                        update_files_table(data);
+                        $.jnotify('{{ _("Successfully upload file") }}');
+                    },
+                    error: function(req, st, err) {
+                        $.jnotify('{{ _("Error updating file list: ") }}' + st, "error", true);
+                    },
+                });
+            } else {
                 $.jnotify('{{ _("Unable to upload file ") }}', "error", true);
             }
         });

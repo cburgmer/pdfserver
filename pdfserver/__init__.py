@@ -17,7 +17,7 @@ babel = Babel(app)
 
 url('/', 'views.main')
 url('/main_table', 'views.main_table', methods=['POST'])
-url('/form', 'views.handle_form', methods=['POST'])
+url('/handleform', 'views.handle_form', methods=['POST'])
 #url('/confirmdelete', 'views.confirm_delete', methods=['POST'])
 url('/delete', 'views.delete', methods=['POST'])
 url('/resultpage/<task_id>', 'views.result_page', methods=['GET'])
