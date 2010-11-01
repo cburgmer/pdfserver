@@ -255,7 +255,7 @@
                 <input type="file" name="file" id="id_file" size="30"/>
                 <input type="hidden" name="uploadtype" id="uploadtype" value=""/>
                 <button type="submit" id="uploadbutton" name="form_action" value="upload">{{ _("Upload") }}</button>
-                <span id="upload-progress" style="margin-left: 1em; display: none;"><img src="{{ url_for('static', filename='ajax-loader-circle.gif') }}"/> {{ _("Uploading your file...") }}</span>
+                <span id="upload-progress" style="margin-left: 1em; display: none;"><img src="{{ url_for('static', filename='ajax-loader-circle.gif') }}" alt="loading"/> {{ _("Uploading your file...") }}</span>
             </td>
         </tr>
         <tr id="moreoptions">
