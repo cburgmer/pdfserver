@@ -46,8 +46,8 @@
     // Reload file table when upload_target iframe as been updated after file upload
     $(window).load(function() {
         $("#upload_target").load(function() {
-            $("#upload-progress").hide();
-            if (!window.frames["upload_target"].document.getElementById('content')) {
+            $("#upload-progress").css('visibility', 'hidden');
+            if (window.frames["upload_target"].document.getElementById('content')) {
                 $.ajax({
                     type : 'POST',
                     dataType : 'json',
@@ -87,6 +87,7 @@
             modal: true,
             buttons: {
                 '{{ _("Delete all files") }}': function() {
+                    $('#deleteall-progress').css('visibility', 'visible');
                     $.ajax({
                         type : 'POST',
                         dataType : 'json',
@@ -94,10 +95,12 @@
                         data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize') + '&form_action=deleteall&delete=delete',
                         error: function(req, st, err) {
                             $.jnotify('{{ _("Unable to delete files: ") }}' + st, "error", true);
+                            $('#deleteall-progress').css('visibility', 'hidden');
                         },
                         success: function(data) {
                             update_files_table(data);
                             $.jnotify('{{ _("Deleted all files") }}');
+                            $('#deleteall-progress').css('visibility', 'hidden');
                         },
                     });
                     $(this).dialog('close');
@@ -172,7 +175,7 @@
             text: true
         });
         $("#uploadbutton").click(function() {
-            $("#upload-progress").show();
+            $("#upload-progress").css('visibility', 'visible');
             return true;
         });
         $("#uploadtype").attr('value', 'ajax');
@@ -255,7 +258,7 @@
                 <input type="file" name="file" id="id_file" size="30"/>
                 <input type="hidden" name="uploadtype" id="uploadtype" value=""/>
                 <button type="submit" id="uploadbutton" name="form_action" value="upload">{{ _("Upload") }}</button>
-                <span id="upload-progress" style="margin-left: 1em; display: none;"><img src="{{ url_for('static', filename='ajax-loader-circle.gif') }}" alt="loading"/> {{ _("Uploading your file...") }}</span>
+                <span id="upload-progress" style="visibility: hidden;"><img src="{{ url_for('static', filename='ajax-loader-circle.gif') }}" width="16" alt="loading"/></span>
             </td>
         </tr>
         <tr id="moreoptions">
@@ -294,7 +297,10 @@
             <td colspan="3" style="text-align: right;"><span style="font-size: 1.1em;">
             <button type="submit" name="form_action" value="combine" id="combinebutton">{{ _("Combine &amp; open") }}</button>
             </span></td>
-            <td><span style="font-size: 1.1em;"><button type="submit" name="form_action" value="confirm_deleteall" id="deleteallbutton" class="deleteallbutton">{{ _("Delete all files") }}</button></span></td>
+            <td><span style="font-size: 1.1em; white-space:nowrap;">
+                <button type="submit" name="form_action" value="confirm_deleteall" id="deleteallbutton" class="deleteallbutton">{{ _("Delete all files") }}</button>
+                <span id="deleteall-progress" style="visibility: hidden;"><img src="{{ url_for('static', filename='ajax-loader-circle-white.gif') }}" width="16" alt="loading"/></span>
+            </span></td>
         </tr>
     </tfoot>
     <tbody id="files">

@@ -9,10 +9,13 @@
             <td><input type="text" class="pageranges" name="pages_{{ upload.id }}" id="pages_{{ upload.id }}" value="{{ request.form.get('pages_%d' % upload.id, '') }}"/>
             <script type="text/javascript">$(function() {$("#pages_{{ upload.id }}").rules("add", {maxpages: {{upload.page_count}} })});</script>
             </td>
-            <td style="text-align: right;"><a class="deletebutton" id="deleteanchor_{{ upload.id }}" href="#"></a>
+            <td style="text-align: right; white-space:nowrap;"">
+            <a class="deletebutton" id="deleteanchor_{{ upload.id }}" href="#"></a>
+            <span id="delete-progress_{{ upload.id }}" style="visibility: hidden;"><img src="{{ url_for('static', filename='ajax-loader-circle.gif') }}" width="16" alt="loading"/></span>
             <script type="text/javascript">
             $(function() {
                 $("#deleteanchor_{{ upload.id }}").click(function() {
+                    $("#delete-progress_{{ upload.id }}").css('visibility', 'visible');
                     $.ajax({
                         type : 'POST',
                         dataType : 'json',
@@ -20,10 +23,12 @@
                         data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize') + '&form_action=delete&id={{ upload.id }}',
                         error: function(req, st, err) {
                             $.jnotify('{{ _("Unable to upload file: ") }}' + st, "error");
+                            $("#delete-progress_{{ upload.id }}").css('visibility', 'hidden');
                         },
                         success: function(data) {
                             update_files_table(data);
                             $.jnotify('{{ _("Deleted file") }}');
+                            $("#delete-progress_{{ upload.id }}").css('visibility', 'hidden');
                         },
                     });
                 })
