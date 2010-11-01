@@ -39,6 +39,8 @@ Already included
   http://jquery.com/
 * jQuery plugin: Validation,
   http://bassistance.de/jquery-plugins/jquery-plugin-validation/
+* jNotify jQuery Plug-in, unobtrusive notification system
+  http://www.givainc.com/labs/jnotify_jquery_plugin.htm
 
 Features
 ========
