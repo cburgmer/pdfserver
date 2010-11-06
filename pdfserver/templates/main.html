@@ -207,8 +207,8 @@
         </tr>
         <tr>
             <td colspan="2"><span style="font-size: 1.1em;">
-            <a href="#" id="moreoptionsbutton" onclick="$('#moreoptions').fadeIn();$('#moreoptionsbutton').hide();$('#lessoptionsbutton').show();"></a>
-            <a href="#" style="display: none;" id="lessoptionsbutton" onclick="$('#moreoptions').fadeOut();$('#lessoptionsbutton').hide();$('#moreoptionsbutton').show();"></a>
+            <a href="#" id="moreoptionsbutton" onclick="$('#moreoptions').fadeIn();$('#moreoptionsbutton').hide();$('#lessoptionsbutton').show();return false"></a>
+            <a href="#" style="display: none;" id="lessoptionsbutton" onclick="$('#moreoptions').fadeOut();$('#lessoptionsbutton').hide();$('#moreoptionsbutton').show();return false"></a>
             </span></td>
             <td colspan="3" style="text-align: right;"><span style="font-size: 1.1em;">
             <button type="submit" id="combinebutton"{% if uploads %}{% else %} onclick="return false"{% endif %}>{{ _("Combine &amp; open") }}</button>
