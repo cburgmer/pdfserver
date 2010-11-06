@@ -98,6 +98,8 @@ def handle_form():
         return delete_all()
     elif action == 'combine':
         return combine_pdfs()
+    elif action == 'cancel':
+        return main()
     else:
         raise MethodNotAllowed()
 

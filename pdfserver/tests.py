@@ -221,6 +221,25 @@ class DeleteTestCase(PdfserverTestCase):
 
         self.assertEquals(rv.status_code, 404)
 
+    def test_confirm_delete_cancel_has_no_effect(self):
+        from pdfserver.models import Upload
+        assert Upload.query.count() == 0
+
+        self.app.post('/handleform',
+                      data={'file': (self.get_pdf_stream(), 'test.pdf')})
+
+        self.assertEquals(Upload.query.count(), 1)
+
+        rv = self.app.post('/handleform',
+                           data={'form_action': 'cancel'},
+                           follow_redirects=True)
+
+        self.assertEquals(rv.status_code, 200)
+
+        self.assertEquals(Upload.query.count(), 1)
+
+        self.clean_up()
+
 
 class InteractionTestCase(PdfserverTestCase):
 
