@@ -1,5 +1,6 @@
 #filetable { width: 80%; border-spacing: 0; }
-#files tr { height: 20px; background-color:#eef; cursor: default; }
+#files tr.odd { height: 50px; width: 100%; background-color:#e9e9f9; cursor: default; }
+#files tr.even { height: 50px; width: 100%; background-color:#eef; cursor: default; }
 #files * .text { font-size: 1.2em; }
 #filetable * th { border: 1px; border-style: none none solid none; }
 #filetable * td { padding: 2px; }
@@ -10,4 +11,9 @@
 .footer a:active { text-decoration:underline; }
 #moreoptions { background-color:#efe; }
 #moreoptions td { border: 1px; border-style: solid none none; padding: 6px; }
+#combinefooter td { padding: 6px; }
+#uploadfooter { background-color:#eef; }
+#uploadfooter td { border: 1px; border-style: solid none none; padding: 6px; }
 #moreoptions td span { display: inline-block; height: 100%; vertical-align: top; margin: 3px; margin-right: 10px; }
+#nouploads { background-color: #fff; }
+#nouploads td { padding: 1em; font-style: italic; }

@@ -1,0 +1,44 @@
+{% if uploads %}
+    {% for upload in uploads %}
+        <tr class="file {{ loop.cycle('even', 'odd') }}" id="file_{{ upload.id }}">
+            <td><span class="noselection ui-icon ui-icon-arrowthick-2-n-s"></span>
+            </td>
+            <td><span class="noselection text">{{upload.filename}}</span></td>
+            <td><span class="noselection text">{% if upload.size %}{{upload.size|filesizeformat}}{% endif %}</span></td>
+            <td style="text-align: right;"><span class="noselection text">{{upload.page_count}}</span></td>
+            <td><input type="text" class="pageranges" name="pages_{{ upload.id }}" id="pages_{{ upload.id }}" value="{{ request.form.get('pages_%d' % upload.id, '') }}"/>
+            <script type="text/javascript">$(function() {$("#pages_{{ upload.id }}").rules("add", {maxpages: {{upload.page_count}} })});</script>
+            </td>
+            <td style="text-align: right; white-space:nowrap;"">
+            <a class="deletebutton" id="deleteanchor_{{ upload.id }}" href="#"></a>
+            <span id="delete-progress_{{ upload.id }}" style="visibility: hidden;"><img src="{{ url_for('static', filename='ajax-loader-circle.gif') }}" width="16" alt="loading"/></span>
+            <script type="text/javascript">
+            $(function() {
+                $("#deleteanchor_{{ upload.id }}").click(function() {
+                    $("#delete-progress_{{ upload.id }}").css('visibility', 'visible');
+                    $.ajax({
+                        type : 'POST',
+                        dataType : 'json',
+                        url : '{{ url_for('delete') }}',
+                        data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize') + '&form_action=delete&id={{ upload.id }}',
+                        error: function(req, st, err) {
+                            $.jnotify('{{ _("Unable to upload file: ") }}' + st, "error");
+                            $("#delete-progress_{{ upload.id }}").css('visibility', 'hidden');
+                        },
+                        success: function(data) {
+                            update_files_table(data);
+                            $.jnotify('{{ _("Deleted file") }}');
+                            $("#delete-progress_{{ upload.id }}").css('visibility', 'hidden');
+                        },
+                    });
+                    return false;
+                })
+            });
+            </script></td>
+        </tr>
+    {% endfor %}
+{% else %}
+    <tr id="nouploads">
+        <td colspan="6">{{ _("There are no uploaded files at present.") }}</td>
+    </tr>
+{% endif %}

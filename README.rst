@@ -39,6 +39,8 @@ Already included
   http://jquery.com/
 * jQuery plugin: Validation,
   http://bassistance.de/jquery-plugins/jquery-plugin-validation/
+* jNotify jQuery Plug-in, unobtrusive notification system
+  http://www.givainc.com/labs/jnotify_jquery_plugin.htm
 
 Features
 ========
@@ -56,6 +58,7 @@ Changes
 =======
 0.x
 
+* Handle upload and remove actions through Ajax
 * Support for asynchronous PDF generation
 * Fix max upload size handling for App Engine
 * Unittests

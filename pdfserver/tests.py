@@ -40,6 +40,12 @@ class PdfserverTestCase(unittest.TestCase):
                                 .decode('base64')\
                                 .decode('zlib'))
 
+    def extract_ids_from_main_page(self, data):
+        ids = re.findall(r'<tr class="(?:[^"]+ )?file(?: [^"]+)?" '
+                         r'id="file_(\d+)">',
+                         data)
+        return map(int, ids)
+
     def clean_up(self):
         from pdfserver.models import Upload
         for upload in Upload.query.all():
@@ -64,7 +70,7 @@ class PdfserverTestCase(unittest.TestCase):
 class UploadTestCase(PdfserverTestCase):
 
     def test_upload_returns_redirect(self):
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         self.assertEquals(rv.status_code, 302)
@@ -72,7 +78,7 @@ class UploadTestCase(PdfserverTestCase):
         self.clean_up()
 
     def test_upload_shows_resulting_file(self):
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')},
                            follow_redirects=True)
 
@@ -83,7 +89,7 @@ class UploadTestCase(PdfserverTestCase):
     def test_upload_creates_file(self):
         from pdfserver.models import Upload
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         upload = Upload.query.filter(Upload.filename == 'test.pdf').one()
@@ -96,7 +102,7 @@ class UploadTestCase(PdfserverTestCase):
 
         assert Upload.query.count() == 0
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         self.assertEquals(Upload.query.count(), 1)
@@ -109,21 +115,18 @@ class UploadTestCase(PdfserverTestCase):
         assert Upload.query.count() == 0
 
         with self.app as c:
-            rv = c.post('/upload',
+            rv = c.post('/handleform',
                         data={'file': (self.get_pdf_stream(), 'test.pdf')},
                         follow_redirects=True)
-            rv = c.post('/upload',
+            rv = c.post('/handleform',
                         data={'file': (self.get_pdf_stream(), 'test2.pdf')},
                         follow_redirects=True)
-            rv = c.post('/upload',
+            rv = c.post('/handleform',
                         data={'file': (self.get_pdf_stream(), 'test3.pdf')},
                         follow_redirects=True)
 
             # Get file ids
-            ids = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                            r'<input type="hidden" name="id" value="(\d+)"/>',
-                            rv.data)
-            ids = map(int, ids)
+            ids = self.extract_ids_from_main_page(rv.data)
             self.assertEquals(sorted(ids), sorted(session['file_ids']))
 
             self.assertEquals(Upload.query.filter(Upload.id.in_(ids)).count(),
@@ -138,18 +141,16 @@ class DeleteTestCase(PdfserverTestCase):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')},
                            follow_redirects=True)
 
         # Get file id
-        ids = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                         r'<input type="hidden" name="id" value="(\d+)"/>',
-                         rv.data)
+        ids = self.extract_ids_from_main_page(rv.data)
         self.assert_(len(ids) == 1)
 
         rv = self.app.post('/delete',
-                           data={'delete': 'delete', 'id': ids[0]},
+                           data={'id': ids[0]},
                            follow_redirects=True)
 
         self.assertEquals(rv.status_code, 200)
@@ -160,15 +161,15 @@ class DeleteTestCase(PdfserverTestCase):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
 
-        self.app.post('/upload',
+        self.app.post('/handleform',
                       data={'file': (self.get_pdf_stream(), 'test.pdf')})
-        self.app.post('/upload',
+        self.app.post('/handleform',
                       data={'file': (self.get_pdf_stream(), 'test2.pdf')})
 
         self.assertEquals(Upload.query.count(), 2)
 
-        rv = self.app.post('/deleteall',
-                           data={'delete': 'delete'},
+        rv = self.app.post('/handleform',
+                           data={'form_action': 'deleteall'},
                            follow_redirects=True)
 
         self.assertEquals(rv.status_code, 200)
@@ -179,23 +180,19 @@ class DeleteTestCase(PdfserverTestCase):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')},
                            follow_redirects=True)
 
         # Get file id first upload
-        ids = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                         r'<input type="hidden" name="id" value="(\d+)"/>',
-                         rv.data)
+        ids = self.extract_ids_from_main_page(rv.data)
         self.assert_(len(ids) == 1)
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test2.pdf')},
                            follow_redirects=True)
         # Get file id second upload
-        ids2 = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                         r'<input type="hidden" name="id" value="(\d+)"/>',
-                         rv.data)
+        ids2 = self.extract_ids_from_main_page(rv.data)
         ids2.remove(ids[0])
         self.assert_(len(ids2) == 1)
 
@@ -235,13 +232,13 @@ class InteractionTestCase(PdfserverTestCase):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
 
-        self.app.post('/upload',
+        self.app.post('/handleform',
                       data={'file': (self.get_pdf_stream(), 'test.pdf')})
         ids = [upload.id for upload in Upload.query.all()]
         self.assertEquals(len(ids), 1)
         app_id = ids[0]
 
-        self.app2.post('/upload',
+        self.app2.post('/handleform',
                        data={'file': (self.get_pdf_stream(), 'test.pdf')})
         ids = [upload.id for upload in Upload.query.all()
                          if upload.id != app_id]
@@ -252,18 +249,12 @@ class InteractionTestCase(PdfserverTestCase):
 
         # Get file id for app 1
         rv = self.app.get('/')
-        ids = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                         r'<input type="hidden" name="id" value="(\d+)"/>',
-                         rv.data)
-        ids = map(int, ids)
+        ids = self.extract_ids_from_main_page(rv.data)
         self.assertEquals(ids, [app_id])
 
         # Get file id for app 2
         rv = self.app2.get('/')
-        ids = re.findall(r'<form [^<]*name="deletefile_\d+">\s*'
-                         r'<input type="hidden" name="id" value="(\d+)"/>',
-                         rv.data)
-        ids = map(int, ids)
+        ids = self.extract_ids_from_main_page(rv.data)
         self.assertEquals(ids, [app2_id])
 
         self.clean_up()
@@ -272,13 +263,13 @@ class InteractionTestCase(PdfserverTestCase):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
 
-        self.app.post('/upload',
+        self.app.post('/handleform',
                       data={'file': (self.get_pdf_stream(), 'test.pdf')})
         ids = [upload.id for upload in Upload.query.all()]
         self.assertEquals(len(ids), 1)
         app_id = ids[0]
 
-        self.app2.post('/upload',
+        self.app2.post('/handleform',
                        data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Delete upload from app1 in app2
@@ -305,9 +296,11 @@ class DownloadMixin(object):
         TaskResult.commit()
 
     def combine_and_download(self, **data):
+        options = {'form_action': 'combine'}
+        options.update(data)
         # Start build
-        rv = self.app.post('/combine',
-                           data=data,
+        rv = self.app.post('/handleform',
+                           data=options,
                            follow_redirects=True)
 
         self.assertEquals(rv.status_code, 200)
@@ -330,7 +323,7 @@ class DownloadTestCase(DownloadMixin, PdfserverTestCase):
         pdf = PdfFileReader(self.get_pdf_stream())
         assert 'Test' in pdf.getPage(0).extractText()
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         rv = self.combine_and_download()
@@ -353,11 +346,11 @@ class DownloadTestCase(DownloadMixin, PdfserverTestCase):
         self.clean_up()
 
     def test_download_removed_fails(self):
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Start build
-        rv = self.app.post('/combine',
+        rv = self.app.post('/handleform', data={'form_action': 'combine'},
                            follow_redirects=True)
 
         self.assertEquals(rv.status_code, 200)
@@ -384,11 +377,11 @@ class DownloadTestCase(DownloadMixin, PdfserverTestCase):
         from pdfserver.faketask import TaskResult
         assert TaskResult.query.count() == 0
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Start build
-        rv = self.app.post('/combine',
+        rv = self.app.post('/handleform', data={'form_action': 'combine'},
                            follow_redirects=True)
 
         self.assertEquals(rv.status_code, 200)
@@ -452,10 +445,13 @@ class CombineTestCase(DownloadMixin, PdfserverTestCase):
         output.write(buf)
         buf.seek(0)
 
-        rv = self.app.post('/upload',
-                           data={'file': (buf, 'test.pdf')})
+        rv = self.app.post('/handleform',
+                           data={'file': (buf, 'test.pdf')},
+                           follow_redirects=True)
 
-        rv = self.combine_and_download(pages_1='-5, 10, 12-14, 18-')
+        ids = self.extract_ids_from_main_page(rv.data)
+        pages_kw = 'pages_%d' % ids[0]
+        rv = self.combine_and_download(**{pages_kw: '-5, 10, 12-14, 18-'})
 
         pdf_download = PdfFileReader(StringIO(rv.data))
 
@@ -484,7 +480,7 @@ class CombineTestCase(DownloadMixin, PdfserverTestCase):
                 new_pdf.write(buf)
                 buf.seek(0)
 
-                c.post('/upload', data={'file': (buf, 'test_%d.pdf' % i)})
+                c.post('/handleform', data={'file': (buf, 'test_%d.pdf' % i)})
 
             # Re-arrange uploads and download combined files
             random.shuffle(order)
@@ -511,7 +507,7 @@ class WatermarkTestCase(DownloadMixin, PdfserverTestCase):
 
     def setUp(self):
         super(WatermarkTestCase, self).setUp()
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
     def test_watermark(self):
@@ -536,7 +532,7 @@ class RotationTestCase(DownloadMixin, PdfserverTestCase):
         pdf = PdfFileReader(self.get_pdf_stream())
         assert 'Test' in pdf.getPage(0).extractText()
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         rv = self.combine_and_download(rotate='90')
@@ -551,7 +547,7 @@ class RotationTestCase(DownloadMixin, PdfserverTestCase):
         pdf = PdfFileReader(self.get_pdf_stream())
         assert 'Test' in pdf.getPage(0).extractText()
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Start build without rotation
@@ -571,7 +567,7 @@ class RotationTestCase(DownloadMixin, PdfserverTestCase):
         pdf = PdfFileReader(self.get_pdf_stream())
         assert 'Test' in pdf.getPage(0).extractText()
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Start build without rotation
@@ -585,7 +581,7 @@ class RotationTestCase(DownloadMixin, PdfserverTestCase):
         self.clean_up()
 
         # Upload rotated
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (StringIO(content_half), 'test.pdf')})
 
         # Start build with rotation
@@ -607,7 +603,7 @@ class NPagesTestCase(DownloadMixin, PdfserverTestCase):
         assert 'Test' in pdf.getPage(0).extractText()
         assert pdf.getNumPages() == 1
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         rv = self.combine_and_download(pages_sheet='2')
@@ -630,7 +626,7 @@ class NPagesTestCase(DownloadMixin, PdfserverTestCase):
         output.write(buf)
         buf.seek(0)
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (buf, 'test.pdf')})
 
         rv = self.combine_and_download(pages_sheet='2')
@@ -648,9 +644,9 @@ class NPagesTestCase(DownloadMixin, PdfserverTestCase):
         assert 'Test' in pdf.getPage(0).extractText()
         assert pdf.getNumPages() == 1
 
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
-        rv = self.app.post('/upload',
+        rv = self.app.post('/handleform',
                            data={'file': (self.get_pdf_stream(), 'test2.pdf')})
 
         rv = self.combine_and_download(pages_sheet='2')

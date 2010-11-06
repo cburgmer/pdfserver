@@ -1,6 +1,5 @@
 * Warn that cookies need to be activated.
 * Clean up expired sessions & files from these sessions (use CRON).
-* Ranges vanish when file is added and page reloaded
 * Only show options that are actually available (dependencies!).
 * Expire results from celery (using TASK_RESULT_EXPIRES)
 * Check celery broker timeout

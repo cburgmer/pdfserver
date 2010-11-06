@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import re
+from operator import attrgetter
 
 from flask import g, request, Response, session, render_template
 from flask import abort, redirect, url_for, jsonify
 from werkzeug import wrap_file
-from werkzeug.exceptions import InternalServerError, Gone, NotFound
+from werkzeug.exceptions import InternalServerError, MethodNotAllowed, Gone, \
+                                NotFound
 
 from pyPdf import PdfFileWriter, PdfFileReader
 
@@ -43,15 +45,61 @@ def _get_upload():
         raise abort(404)
 
 def _get_uploads():
-    file_ids = session.get('file_ids', [])
+    file_ids = map(int, session.get('file_ids', []))
     if not file_ids:
         return []
     return Upload.get_for_ids(file_ids)
+
+def _order_files(files):
+    """Return a mapping for each id given by POST data.
+
+    Appends missing ids to the end of the given order.
+    """
+    files_order = []
+
+    file_id_map = dict((upload.id, upload) for upload in files)
+
+    # Get user selected order from form
+    order = request.form.getlist('file[]')
+    for id in order:
+        try:
+            id = int(id)
+        except ValueError:
+            continue
+        if id and id in file_id_map:
+            files_order.append(file_id_map[id])
+            del file_id_map[id]
+
+    # Append missing ids
+    files_order.extend(file_id_map.values())
+
+    return files_order
 
 @templated('main.html')
 def main():
     files = _get_uploads()
     return {'uploads': files}
+
+def main_table():
+    # Get user defined order
+    files = _order_files(_get_uploads())
+
+    return jsonify(content=render_template('uploads.html',
+                                           uploads=files))
+
+def handle_form():
+    action = request.form.get('form_action', 'upload')
+    app.logger.debug(action)
+    if action == 'upload':
+        return upload_file()
+    elif action == 'confirm_deleteall':
+        return confirm_delete_all()
+    elif action == 'deleteall':
+        return delete_all()
+    elif action == 'combine':
+        return combine_pdfs()
+    else:
+        raise MethodNotAllowed()
 
 def upload_file():
     if 'file' in request.files and request.files['file']:
@@ -73,7 +121,10 @@ def upload_file():
     else:
         app.logger.error("No file specified")
 
-    return redirect(url_for('main'))
+    if request.is_xhr:
+        return ''
+    else:
+        return redirect(url_for('main'))
 
 #@templated('confirm_delete.html')
 #def confirm_delete():
@@ -81,15 +132,14 @@ def upload_file():
     #return {'uploads': files}
 
 def delete():
-    if request.form.get('delete', False):
-        upload = _get_upload()
+    upload = _get_upload()
 
-        session['file_ids'].remove(upload.id)
-        session.modified = True
-        Upload.delete(upload)
-        Upload.commit()
+    session['file_ids'].remove(upload.id)
+    session.modified = True
+    Upload.delete(upload)
+    Upload.commit()
 
-    return redirect(url_for('main'))
+    return main_table()
 
 @templated('confirm_delete_all.html')
 def confirm_delete_all():
@@ -97,15 +147,18 @@ def confirm_delete_all():
     return {'uploads': files}
 
 def delete_all():
-    if request.form.get('delete', False):
-        files = _get_uploads()
+    app.logger.debug("Deleting all files")
+    files = _get_uploads()
 
-        session['file_ids'] = []
-        for upload in files:
-            Upload.delete(upload)
-        Upload.commit()
+    session['file_ids'] = []
+    for upload in files:
+        Upload.delete(upload)
+    Upload.commit()
 
-    return redirect(url_for('main'))
+    if request.is_xhr:
+        return main_table()
+    else:
+        return redirect(url_for('main'))
 
 def _respond_with_pdf(output):
     # TODO get proper file name
@@ -120,22 +173,10 @@ def _respond_with_pdf(output):
     return response
 
 def combine_pdfs():
-
-    def order_files(files, order):
-        try:
-            order = map(int, order)
-        except ValueError:
-            app.logger.debug("Error converting to ints: %r" % order)
-        if (not order or len(files) != len(order) or min(order) != 1 or
-            max(order) != len(files)):
-            order = range(1, len(files)+1)
-
-        return ((idx, files[idx-1]) for idx in order)
-
-    file_ids = session.get('file_ids', [])
+    files = _get_uploads()
 
     # If user clicked on button but no files were uploaded
-    if not file_ids:
+    if not files:
         return redirect(url_for('main'))
 
     # Get options
@@ -159,12 +200,13 @@ def combine_pdfs():
 
 
     # Get pdf objects and arrange in the user selected order, then get ranges
-    order = request.form.getlist('file[]')
-    indices, file_ids = zip(*order_files(file_ids, order))
-    pages = [request.form.get('pages_%d' % item_idx, "")
-                    for item_idx in indices]
+    files = _order_files(files)
+
+    pages = [request.form.get('pages_%d' % upload.id, "")
+                    for upload in files]
 
     # Do the actual work
+    file_ids = map(attrgetter('id'), files)
     resp = handle_pdfs_task.apply_async((file_ids,
                                          pages,
                                          pages_sheet,

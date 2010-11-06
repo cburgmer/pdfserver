@@ -30,3 +30,6 @@ Pdfserver includes the following third-party sources:
 
 - jQuery plugin: Validation, dual licensed under MIT License and GPL,
   http://bassistance.de/jquery-plugins/jquery-plugin-validation/
+
+- jNotify jQuery Plug-in, licensed under the Apache License, Version 2.0
+  http://www.givainc.com/labs/jnotify_jquery_plugin.htm

@@ -25,17 +25,86 @@
         },
         "{{ _("There are only maximum {0} pages.") }}"
     );
+    // Update #files with new content loaded from ajax call
+    function update_files_table(data) {
+        if (data) {
+            $("#files").html(data.content);
+        }
+        $(".deletebutton").button({
+            icons: {
+                primary: 'ui-icon-circle-close',
+            },
+            label: "{{ _("Delete") }}",
+            text: false,
+        });
+        if ($("#files tr.file").length == 0) {
+            $( "#files" ).sortable( "option", "disabled", true );
+        } else {
+            $( "#files" ).sortable( "option", "disabled", false );
+        }
+    }
+    // Reload file table when upload_target iframe as been updated after file upload
+    $(window).load(function() {
+        $("#upload_target").load(function() {
+            if (window.frames["upload_target"].document.getElementById('content')) {
+                $.ajax({
+                    type : 'POST',
+                    dataType : 'json',
+                    url: '{{ url_for('main_table') }}',
+                    data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize'),
+                    success: function(data) {
+                        $("#upload-progress").css('visibility', 'hidden');
+                        update_files_table(data);
+                        $.jnotify('{{ _("Successfully upload file") }}');
+                    },
+                    error: function(req, st, err) {
+                        $("#upload-progress").css('visibility', 'hidden');
+                        $.jnotify('{{ _("Error updating file list: ") }}' + st, "error", true);
+                    },
+                });
+            } else {
+                $("#upload-progress").css('visibility', 'hidden');
+                $.jnotify('{{ _("Unable to upload file ") }}', "error", true);
+            }
+        });
+    });
     $(function() {
-        $("#files").sortable();
+        function cycle_mark_uploads() {
+            $.each($("#files tr.file"), function(idx, item) {
+                if (idx % 2) {
+                    $(item).attr('class', 'file odd');
+                } else {
+                    $(item).attr('class', 'file even');
+                }
+            });
+        }
+        $("#files").sortable({
+            stop: function(event, ui) { cycle_mark_uploads() },
+        });
+        update_files_table();
         $(".noselection").disableSelection();
-        // delete all popop dialog
         $("#deleteall").dialog({
             autoOpen: false,
             resizable: false,
             modal: true,
             buttons: {
                 '{{ _("Delete all files") }}': function() {
-                    document.forms['deleteall'].submit();
+                    $('#deleteall-progress').css('visibility', 'visible');
+                    $.ajax({
+                        type : 'POST',
+                        dataType : 'json',
+                        url : '{{ url_for('handle_form') }}',
+                        data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize') + '&form_action=deleteall&delete=delete',
+                        error: function(req, st, err) {
+                            $.jnotify('{{ _("Unable to delete files: ") }}' + st, "error", true);
+                            $('#deleteall-progress').css('visibility', 'hidden');
+                        },
+                        success: function(data) {
+                            update_files_table(data);
+                            $.jnotify('{{ _("Deleted all files") }}');
+                            $('#deleteall-progress').css('visibility', 'hidden');
+                        },
+                    });
                     $(this).dialog('close');
                 },
                 '{{ _("Cancel") }}': function() {
@@ -67,19 +136,18 @@
             }
         });
         // nice input buttons
-        $(".deletebutton").button({
-            icons: {
-                primary: 'ui-icon-circle-close',
-            },
-            label: "{{ _("Delete") }}",
-            text: false,
-        });
         $(".deleteallbutton").button({
             icons: {
                 primary: 'ui-icon-circle-close',
             },
             label: "{{ _("All") }}",
             text: true,
+        });
+        $(".deleteallbutton").click(function() {
+            if ($("#files tr.file").length > 0) {
+                $('#deleteall').dialog('open');
+            }
+            return false;
         });
         $("#combinebutton").button({
             icons: {
@@ -101,14 +169,22 @@
             label: "{{ _("Less options") }}",
             text: true
         });
+        // Upload action
         $("#uploadbutton").button({
             icons: {
                 primary: 'ui-icon-plusthick'
             },
             text: true
         });
+        $("#uploadbutton").click(function() {
+            $("#upload-progress").css('visibility', 'visible');
+            return true;
+        });
+        $("#uploadtype").attr('value', 'ajax');
+        $("#filesform").attr('target', 'upload_target');
+        // Combine action
         $("#filesform").validate();
-        $('#filesform').submit(function() {
+        $('#combinebutton').click(function() {
             function test_pdf_finished(check_url) {
                 if (pdfgenerated_check_interval <= 0) {
                     return
@@ -140,21 +216,23 @@
                     },
                     pdfgenerated_check_interval);
             };
-            $('#pdfgenerated').dialog('open');
-            $("#pdfgenerated_msg").html('{{ _("Generating your PDF...") }}<br/><img src="{{ url_for('static', filename='ajax-loader.gif')}}" alt="loading" />');
-            pdfgenerated_check_interval = 500;
-            $.ajax({
-                type : 'POST',
-                dataType : 'json',
-                url : '{{ url_for('combine_pdfs') }}',
-                data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize'),
-                error: function(req, st, err) {
-                    ("#pdfgenerated_msg").html('{{ _("An error occurred: ") }}' + st);
-                },
-                success: function(data, textStatus, request) {
-                    test_pdf_finished(data.url);
-                }
-            });
+            if ($("#files tr.file").length > 0) {
+                $('#pdfgenerated').dialog('open');
+                $("#pdfgenerated_msg").html('{{ _("Generating your PDF...") }}<br/><img src="{{ url_for('static', filename='ajax-loader.gif')}}" alt="loading" />');
+                pdfgenerated_check_interval = 500;
+                $.ajax({
+                    type : 'POST',
+                    dataType : 'json',
+                    url : '{{ url_for('handle_form') }}',
+                    data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize') + '&form_action=combine',
+                    error: function(req, st, err) {
+                        ("#pdfgenerated_msg").html('{{ _("An error occurred: ") }}' + st);
+                    },
+                    success: function(data, textStatus, request) {
+                        test_pdf_finished(data.url);
+                    }
+                });
+            };
             return false;
         });
     });
@@ -163,8 +241,7 @@
 <h1>{{ _("Welcome to pdfserver") }}</h1>
 <p>{{ _("Upload PDF files, drag them into the right order and recombine pages.") }}</p>
 
-<h3>{{ _("PDF files") }}</h3>
-<form action="{{ url_for('combine_pdfs') }}" id="filesform" name="combine" method="post">
+<form action="{{ url_for('handle_form') }}" id="filesform" name="action_form" method="post" enctype="multipart/form-data" accept-charset="utf-8">
 <table id="filetable">
     <thead>
     <tr>
@@ -177,6 +254,15 @@
     </tr>
     </thead>
     <tfoot>
+        <tr id="uploadfooter">
+            <td></td>
+            <td colspan="5">
+                <input type="file" name="file" id="id_file" size="30"/>
+                <input type="hidden" name="uploadtype" id="uploadtype" value=""/>
+                <button type="submit" id="uploadbutton" name="form_action" value="upload">{{ _("Upload") }}</button>
+                <span id="upload-progress" style="visibility: hidden;"><img src="{{ url_for('static', filename='ajax-loader-circle.gif') }}" width="16" alt="loading"/></span>
+            </td>
+        </tr>
         <tr id="moreoptions">
             <td colspan="6">
                 <span>
@@ -205,73 +291,29 @@
                 </span>
             </td>
         </tr>
-        <tr>
+        <tr id="combinefooter">
             <td colspan="2"><span style="font-size: 1.1em;">
             <a href="#" id="moreoptionsbutton" onclick="$('#moreoptions').fadeIn();$('#moreoptionsbutton').hide();$('#lessoptionsbutton').show();return false"></a>
             <a href="#" style="display: none;" id="lessoptionsbutton" onclick="$('#moreoptions').fadeOut();$('#lessoptionsbutton').hide();$('#moreoptionsbutton').show();return false"></a>
             </span></td>
             <td colspan="3" style="text-align: right;"><span style="font-size: 1.1em;">
-            <button type="submit" id="combinebutton"{% if uploads %}{% else %} onclick="return false"{% endif %}>{{ _("Combine &amp; open") }}</button>
+            <button type="submit" name="form_action" value="combine" id="combinebutton">{{ _("Combine &amp; open") }}</button>
             </span></td>
-            <td><span style="font-size: 1.1em;"><a href="#" id="deleteallanchor" class="deleteallbutton"{% if uploads %} onclick="$('#deleteall').dialog('open'); return false"{% else %} onclick="return false"{% endif %}></a></span></td>
+            <td><span style="font-size: 1.1em; white-space:nowrap;">
+                <button type="submit" name="form_action" value="confirm_deleteall" id="deleteallbutton" class="deleteallbutton">{{ _("Delete all files") }}</button>
+                <span id="deleteall-progress" style="visibility: hidden;"><img src="{{ url_for('static', filename='ajax-loader-circle-white.gif') }}" width="16" alt="loading"/></span>
+            </span></td>
         </tr>
     </tfoot>
-    {% if uploads %}
     <tbody id="files">
-    {% for upload in uploads %}
-        <tr class="{{ loop.cycle('odd', 'even') }}" id="file_{{ loop.index }}">
-            <td><span class="noselection ui-icon ui-icon-arrowthick-2-n-s"></span></td>
-            <td><span class="noselection text">{{upload.filename}}</span></td>
-            <td><span class="noselection text">{% if upload.size %}{{upload.size|filesizeformat}}{% endif %}</span></td>
-            <td style="text-align: right;"><span class="noselection text">{{upload.page_count}}</span></td>
-            <td><input type="text" class="pageranges" name="pages_{{ loop.index }}" id="pages_{{ loop.index }}"/>
-            <script type="text/javascript">$(function() {$("#pages_{{ loop.index }}").rules("add", {maxpages: {{upload.page_count}} })});</script>
-            </td>
-            <td style="text-align: right;"><a class="deletebutton" id="deleteanchor_{{ loop.index }}" href="#" onclick="document.forms['deletefile_{{ loop.index }}'].submit(); return false"></a></td>
-        </tr>
-    {% endfor %}
+    {% include 'uploads.html' %}
     </tbody>
-    {% else %}
-    <tbody>
-        <tr>
-            <td colspan="6"><span style="font-style:italic;">{{ _("There are no uploaded files at present.") }}</span></td>
-        </tr>
-    </tbody>
-    {% endif %}
 </table>
 <script type="text/javascript">$('#moreoptions').hide();</script>
 </form>
-<div id="upload">
-    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" accept-charset="utf-8">
-        <h3>{{ _("Upload a new file") }}</h3>
-        <input type="file" name="file" id="id_file" />
-        <button type="submit" id="uploadbutton">{{ _("Upload") }}</button>
-    </form>
-</div>
-{% if uploads %}
-<!-- HTML wouldn't allow us to place a form inside a form, so put basis here and call by Javascript -->
-{% for upload in uploads %}
-    <form action="{{ url_for('delete') }}" method="post" name="deletefile_{{ loop.index }}">
-        <input type="hidden" name="id" value="{{upload.id}}"/>
-        <input type="hidden" name="delete" value="Delete"/>
-    </form>
-{% endfor %}
-{% endif %}
 
-<noscript>
-<!-- Allow at least deletion of all files if Javascript isn't around -->
-<div>
-    <h3>{{ _("Delete") }}</h3>
-    <form action="{{ url_for('confirm_delete_all') }}" method="post">
-        <input type="submit" value="{{ _("Delete all files") }}"/>
-    </form>
-</div>
-</noscript>
 <div id="deleteall" style="display: none;" title="{{ _("Confirm deletion") }}">
         <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>{{ _("All files will be deleted. Are you sure?") }}</p>
-        <form action="{{ url_for('delete_all') }}" name="deleteall" method="post">
-        <input type="hidden" name="delete" value="Delete all"/>
-        </form>
 </div>
 <div id="pdfgenerated" style="display: none;" title="{{ _("Generating PDF") }}">
     <p>
@@ -292,4 +334,6 @@
 <div style="width: 100%" class="footer">{% trans %}<a href="http://pdfserverapp.appspot.com/">Pdfserver</a> is <a href="http://github.com/cburgmer/pdfserver/blob/master/LICENSE">free and open source software</a> and is available from <a href="http://github.com/cburgmer/pdfserver">Github</a>.{% endtrans %}
 <div style="float: right;"><a href="http://validator.w3.org/check?uri=referer"><img style="border: 0 none;" src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0 Transitional" height="31" width="88"/></a></div>
 </div>
+{# An iframe for "swallowing" the return value of a "ajax-style" file upload #}
+<iframe id="upload_target" name="upload_target" src="" style="display:none;"></iframe>
 {% endblock %}
