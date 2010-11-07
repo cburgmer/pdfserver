@@ -56,12 +56,13 @@ Features
 
 Changes
 =======
-0.x
+0.4
 
 * Handle upload and remove actions through Ajax
 * Support for asynchronous PDF generation
 * Fix max upload size handling for App Engine
 * Unittests
+* Action messages
 
 0.3
 
