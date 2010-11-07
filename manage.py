@@ -10,25 +10,26 @@ manager = Manager(app)
 #install_celery_commands(manager)
 
 class Runserver(Server):
-    def run(self, *args, **kwargs):
-        if app.config['DATABASE'].startswith('sqlite:///'):
-            file_path = app.config['DATABASE'].replace('sqlite:///', '')
+    def handle(self, app_, *args, **kwargs):
+        if app_.config['DATABASE'].startswith('sqlite:///'):
+            file_path = app_.config['DATABASE'].replace('sqlite:///', '')
             if not os.path.exists(file_path):
-                print >>sys.stderr, ("Database not found, you should probably run "
-                                        "'python run.py createdb' first!")
+                print >>sys.stderr, ("Database not found, "
+                                     "you should probably run "
+                                     "'python manage.py createdb' first!")
                 sys.exit(1)
 
-        if not os.path.exists(app.config['UPLOAD_TO']):
+        if not os.path.exists(app_.config['UPLOAD_TO']):
             print >>sys.stderr, ("Upload directory %r not found. "
                                     "You need to create it first!"
-                                    % app.config['UPLOAD_TO'])
+                                    % app_.config['UPLOAD_TO'])
             sys.exit(1)
 
 
-        if not app.config['SECRET_KEY']:
-            app.config['SECRET_KEY'] = 'development key'
+        if not app_.config['SECRET_KEY']:
+            app_.config['SECRET_KEY'] = 'development key'
 
-        Server.run(self, *args, **kwargs)
+        Server.handle(self, app_, *args, **kwargs)
 
 manager.add_command("runserver", Runserver())
 

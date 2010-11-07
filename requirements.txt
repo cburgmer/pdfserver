@@ -15,7 +15,7 @@ reportlab
 -f http://www.reportlab.com/software/opensource/rl-toolkit/download/
 
 # Provide manage command
-Flask-Script
+Flask-Script>=0.3.1
 
 # Asynchronous pdf generation (optional)
 #celery
