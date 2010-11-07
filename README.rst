@@ -79,9 +79,12 @@ Changes
 
 Deploy
 ======
-Install this application with::
 
-    $ python setup.py install pdfserver
+Create a virtualenv and install requirements::
+
+    $ virtualenv env
+    $ source env/bin/activate
+    $ pip install -r requirements.txt
 
 You can simply run the development server with::
 
@@ -100,7 +103,7 @@ General
 3. Give a ``SECRET_KEY`` and keep it secret so that sessions can be signed and
    users cannot see files uploaded by others.
 
-4. Create the database by running in Python::
+4. Create the database by running::
 
     $ python manage.py createdb
 
