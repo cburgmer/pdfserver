@@ -22,7 +22,7 @@
                         url : '{{ url_for('delete') }}',
                         data: $('#filesform').serialize() + '&' + $('#files').sortable('serialize') + '&form_action=delete&id={{ upload.id }}',
                         error: function(req, st, err) {
-                            $.jnotify('{{ _("Unable to upload file: ") }}' + st, "error");
+                            $.jnotify('{{ _("Unable to delete file: ") }}' + st, "error");
                             $("#delete-progress_{{ upload.id }}").css('visibility', 'hidden');
                         },
                         success: function(data) {

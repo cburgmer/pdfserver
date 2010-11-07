@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-09-21 17:53+0200\n"
-"PO-Revision-Date: 2010-10-19 22:50+0200\n"
+"PO-Revision-Date: 2010-11-07 22:12+0100\n"
 "Last-Translator: Christoph Burgmer <cburgmer@ira.uka.de>\n"
 "Language-Team: de <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -16,13 +16,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.5\n"
 
-#: pdfserver/templates/base.html:10
+#: pdfserver/templates/base.html:12
 msgid "PDF server"
 msgstr "PDF-Server"
 
 #: pdfserver/templates/confirm_delete.html:6
 #: pdfserver/templates/confirm_delete_all.html:6
-#: pdfserver/templates/main.html:270
+#: pdfserver/templates/main.html:315
 msgid "Confirm deletion"
 msgstr "Bestätige Löschung"
 
@@ -32,36 +32,38 @@ msgstr "Soll diese Datei wirklich gelöscht werden?"
 
 #: pdfserver/templates/confirm_delete.html:15
 #: pdfserver/templates/confirm_delete_all.html:15
-#: pdfserver/templates/main.html:172
+#: pdfserver/templates/main.html:249
 msgid "Name"
 msgstr "Name"
 
 #: pdfserver/templates/confirm_delete.html:16
 #: pdfserver/templates/confirm_delete_all.html:16
-#: pdfserver/templates/main.html:173
+#: pdfserver/templates/main.html:250
 msgid "Size"
 msgstr "Größe"
 
 #: pdfserver/templates/confirm_delete.html:17
 #: pdfserver/templates/confirm_delete_all.html:17
-#: pdfserver/templates/main.html:174
+#: pdfserver/templates/main.html:251
 msgid "Pages"
 msgstr "Seiten"
 
-#: pdfserver/templates/confirm_delete_all.html:8
-#: pdfserver/templates/main.html:271
-msgid "All files will be deleted. Are you sure?"
-msgstr "Alle Dateien werden gelöscht. Bist du sicher?"
-
+#: pdfserver/templates/confirm_delete.html:29
 #: pdfserver/templates/confirm_delete_all.html:30
-#, fuzzy
-msgid "Delete all"
+#: pdfserver/templates/main.html:91 pdfserver/templates/main.html:303
+msgid "Delete all files"
 msgstr "Alle Dateien löschen"
 
+#: pdfserver/templates/confirm_delete.html:30
 #: pdfserver/templates/confirm_delete_all.html:31
-#: pdfserver/templates/main.html:41 pdfserver/templates/main.html:51
+#: pdfserver/templates/main.html:110 pdfserver/templates/main.html:120
 msgid "Cancel"
 msgstr "Abbrechen"
+
+#: pdfserver/templates/confirm_delete_all.html:8
+#: pdfserver/templates/main.html:316
+msgid "All files will be deleted. Are you sure?"
+msgstr "Alle Dateien werden gelöscht. Bist du sicher?"
 
 #: pdfserver/templates/download.html:3
 msgid "Download result"
@@ -71,15 +73,15 @@ msgstr "Lade Ergebnis herunter"
 msgid "PDF generated"
 msgstr "PDF erstellt"
 
-#: pdfserver/templates/download.html:8 pdfserver/templates/main.html:127
+#: pdfserver/templates/download.html:8 pdfserver/templates/main.html:203
 msgid "Your PDF file has been generated."
 msgstr "Die PDF-Datei wurde erstellt."
 
-#: pdfserver/templates/download.html:8 pdfserver/templates/main.html:127
+#: pdfserver/templates/download.html:8 pdfserver/templates/main.html:203
 msgid "Download PDF..."
 msgstr "PDF herunterladen..."
 
-#: pdfserver/templates/download.html:10 pdfserver/templates/main.html:276
+#: pdfserver/templates/download.html:10 pdfserver/templates/main.html:318
 msgid "Generating PDF"
 msgstr "Erstelle PDF"
 
@@ -91,6 +93,10 @@ msgstr ""
 "Die PDF-Datei wird gerade erstellt. Lade diese Seite neu, um zu "
 "überprüfen, ob der Prozess beendet ist."
 
+#: pdfserver/templates/download.html:14
+msgid "To main page"
+msgstr "Zur Hauptseite"
+
 #: pdfserver/templates/main.html:18
 msgid "Please check your input."
 msgstr "Bitte überprüfe deine Eingabe."
@@ -99,93 +105,99 @@ msgstr "Bitte überprüfe deine Eingabe."
 msgid "There are only maximum {0} pages."
 msgstr "Es existieren nur maximal {0} Seiten."
 
-#: pdfserver/templates/main.html:37 pdfserver/templates/main.html:266
-msgid "Delete all files"
-msgstr "Alle Dateien löschen"
-
-#: pdfserver/templates/main.html:74 pdfserver/templates/main.html:264
+#: pdfserver/templates/main.html:37
 msgid "Delete"
 msgstr "Löschen"
 
-#: pdfserver/templates/main.html:81
+#: pdfserver/templates/main.html:58
+msgid "Successfully upload file"
+msgstr "Datei erfolgreich hochgeladen"
+
+#: pdfserver/templates/main.html:62
+msgid "Error updating file list: "
+msgstr "Fehler bei Aktualisierung der Dateiliste: "
+
+#: pdfserver/templates/main.html:67
+#, fuzzy
+msgid "Unable to upload file "
+msgstr "Kann die Datei nicht hochladen"
+
+#: pdfserver/templates/main.html:99
+msgid "Unable to delete files: "
+msgstr "Kann die Dateien nicht löschen: "
+
+#: pdfserver/templates/main.html:104
+#, fuzzy
+msgid "Deleted all files"
+msgstr "Alle Dateien löschen"
+
+#: pdfserver/templates/main.html:143
 msgid "All"
 msgstr "Alle"
 
-#: pdfserver/templates/main.html:94
+#: pdfserver/templates/main.html:162
 msgid "More options"
 msgstr "Mehr Optionen"
 
-#: pdfserver/templates/main.html:101
+#: pdfserver/templates/main.html:169
 msgid "Less options"
 msgstr "Weniger Optionen"
 
-#: pdfserver/templates/main.html:123 pdfserver/templates/main.html:152
+#: pdfserver/templates/main.html:199 pdfserver/templates/main.html:229
 msgid "An error occurred: "
 msgstr "Ein Fehler ist aufgetreten: "
 
-#: pdfserver/templates/main.html:133
+#: pdfserver/templates/main.html:209
 msgid "Error generating the PDF."
 msgstr "Fehler beim Erstellen des PDFs."
 
-#: pdfserver/templates/main.html:144
+#: pdfserver/templates/main.html:221
 msgid "Generating your PDF..."
 msgstr "Erstelle die PDF-Datei..."
 
-#: pdfserver/templates/main.html:163
+#: pdfserver/templates/main.html:241
 msgid "Welcome to pdfserver"
 msgstr "Willkommen zu pdfserver"
 
-#: pdfserver/templates/main.html:164
+#: pdfserver/templates/main.html:242
 msgid "Upload PDF files, drag them into the right order and recombine pages."
 msgstr ""
 "Lade PDF-Dateien hoch, schiebe sie in die richtige Reihenfolge und "
 "kombiniere Seiten neu."
 
-#: pdfserver/templates/main.html:166
-msgid "PDF files"
-msgstr "PDF-Dateien"
-
-#: pdfserver/templates/main.html:175
+#: pdfserver/templates/main.html:252
 msgid "Optionally select pages (e.g. '1-4, 6, 19-')"
 msgstr "Selektiere wahlweise Seiten (z.B. '1-4, 6, 19-')"
 
-#: pdfserver/templates/main.html:183
-msgid "Pages per sheet"
-msgstr "Seiten pro Blatt"
-
-#: pdfserver/templates/main.html:196
-msgid "Rotate clockwise by"
-msgstr "Drehe im Uhrzeigersinn"
-
-#: pdfserver/templates/main.html:203
-msgid "Insert watermark (e.g. 'DRAFT')"
-msgstr "Füge Wasserzeichen ein (z.B. 'ENTWURF')"
-
-#: pdfserver/templates/main.html:214
-msgid "Combine &amp; open"
-msgstr "Kombinieren &amp; öffnen"
-
-#: pdfserver/templates/main.html:237
-msgid "There are no uploaded files at present."
-msgstr "Es existieren zur Zeit keine hochgeladenen Dateien."
-
-#: pdfserver/templates/main.html:246
-msgid "Upload a new file"
-msgstr "Lade eine neue Datei hoch"
-
-#: pdfserver/templates/main.html:248
+#: pdfserver/templates/main.html:262
 msgid "Upload"
 msgstr "Hochladen"
 
-#: pdfserver/templates/main.html:284
+#: pdfserver/templates/main.html:269
+msgid "Pages per sheet"
+msgstr "Seiten pro Blatt"
+
+#: pdfserver/templates/main.html:282
+msgid "Rotate clockwise by"
+msgstr "Drehe im Uhrzeigersinn"
+
+#: pdfserver/templates/main.html:289
+msgid "Insert watermark (e.g. 'DRAFT')"
+msgstr "Füge Wasserzeichen ein (z.B. 'ENTWURF')"
+
+#: pdfserver/templates/main.html:300
+msgid "Combine &amp; open"
+msgstr "Kombinieren &amp; öffnen"
+
+#: pdfserver/templates/main.html:326
 msgid "Hints"
 msgstr "Hinweise"
 
-#: pdfserver/templates/main.html:286
+#: pdfserver/templates/main.html:328
 msgid "To simply join documents you can leave the page selection empty."
 msgstr "Um einfach zwei Dokumente zu vereinen, lasse die Seitenauswahl leer."
 
-#: pdfserver/templates/main.html:287
+#: pdfserver/templates/main.html:329
 msgid ""
 "If you want to insert pages from a document B into the middle of document"
 " A, upload A twice selecting first the initial and then the final range "
@@ -195,7 +207,7 @@ msgstr ""
 "willst, dann lade A zweifach hoch und selektiere zu erst die Seiten am "
 "Anfang und danach die Seiten am Ende getrennt voneinander."
 
-#: pdfserver/templates/main.html:288
+#: pdfserver/templates/main.html:330
 msgid ""
 "Storing several pages on one sheet will only work on a per-document "
 "basis. If you need to merge pages between documents combine the documents"
@@ -206,7 +218,7 @@ msgstr ""
 "vereinen willst, dann kombiniere zunächst die Dokumente, um dann in einem"
 " zweiten Gang Seiten auf ein Blatt zu vereinen."
 
-#: pdfserver/templates/main.html:292
+#: pdfserver/templates/main.html:334
 msgid ""
 "<a href=\"http://pdfserverapp.appspot.com/\">Pdfserver</a> is <a "
 "href=\"http://github.com/cburgmer/pdfserver/blob/master/LICENSE\">free "
@@ -218,4 +230,17 @@ msgstr ""
 "und Open-Source-Software</a> und kann von <a "
 "href=\"http://github.com/cburgmer/pdfserver\">Github</a> heruntergeladen "
 "werden."
+
+#: pdfserver/templates/uploads.html:25
+msgid "Unable to delete file: "
+msgstr "Kann die Datei nicht löschen: "
+
+#: pdfserver/templates/uploads.html:30
+#, fuzzy
+msgid "Deleted file"
+msgstr "Alle Dateien löschen"
+
+#: pdfserver/templates/uploads.html:42
+msgid "There are no uploaded files at present."
+msgstr "Es existieren zur Zeit keine hochgeladenen Dateien."
 
