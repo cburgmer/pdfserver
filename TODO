@@ -3,3 +3,6 @@
 * Only show options that are actually available (dependencies!).
 * Expire results from celery (using TASK_RESULT_EXPIRES)
 * Check celery broker timeout
+* GAE: DeadlineExceededError on building the pdf does not allow to 
+  save the error to the database, need another way to inform client
+  that the request died

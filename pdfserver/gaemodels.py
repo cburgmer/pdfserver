@@ -5,7 +5,7 @@ from google.appengine.ext import db
 
 from pdfserver import app
 
-MAX_BLOB_SIZE = 1024 * 1024 - 1000 # ~1 MB, works for me
+MAX_BLOB_SIZE = 1000000 # ~1 MB, works for me
 
 USE_1MB_WORKAROUND = True
 """

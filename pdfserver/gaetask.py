@@ -14,6 +14,7 @@ from functools import wraps
 
 from google.appengine.ext import deferred
 from google.appengine.ext import db
+from google.appengine.runtime import DeadlineExceededError
 
 from pdfserver import app
 from pdfserver.gaemodels import USE_1MB_WORKAROUND, MAX_BLOB_SIZE
@@ -234,7 +235,7 @@ def run(name, task_id, *args, **kwargs):
     try:
         output = tasks[name].run(*args, **kwargs)
         success = True
-    except Exception, e:
+    except (DeadlineExceededError, Exception), e:
         app.logger.debug("Exception during run ... %r" % e)
         output = e
         success = False
