@@ -21,6 +21,7 @@ Dependencies
 * Python 2.5, http://www.python.org
 * Flask (tested on 0.6), http://flask.pocoo.org/
 * Flask-Babel, http://packages.python.org/Flask-Babel/
+* Flask-Script (>= 0.3.1), http://bitbucket.org/danjac/flask-script
 * SQLAlchemy (probably >= 0.6.0), http://www.sqlalchemy.org/
 * pyPdf (tested with 1.12, but needs git~20091021 for "N pages on one"),
   http://pybrary.net/pyPdf/
