@@ -81,7 +81,9 @@ Changes
 Deploy
 ======
 
-Create a virtualenv and install requirements::
+Download and extract the soure code.
+
+Create a virtualenv in the extracted folder and install requirements::
 
     $ virtualenv env
     $ source env/bin/activate
@@ -130,7 +132,7 @@ Google App Engine
 -----------------
 
 For pdfserver to run on the App Engine you need to download and copy
-dependencies locally::
+dependencies locally. Run the following in the extracted folder::
 
     # Get dependencies
     $ mkdir tmp
