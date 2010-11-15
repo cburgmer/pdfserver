@@ -1,11 +1,11 @@
 {% if uploads %}
     {% for upload in uploads %}
         <tr class="file {{ loop.cycle('even', 'odd') }}" id="file_{{ upload.id }}">
-            <td><span class="noselection ui-icon ui-icon-arrowthick-2-n-s"></span>
+            <td class="handle"><span class="noselection ui-icon ui-icon-arrowthick-2-n-s"></span>
             </td>
-            <td><span class="noselection text">{{upload.filename}}</span></td>
-            <td><span class="noselection text">{% if upload.size %}{{upload.size|filesizeformat}}{% endif %}</span></td>
-            <td style="text-align: right;"><span class="noselection text">{{upload.page_count}}</span></td>
+            <td class="handle"><span class="noselection text">{{upload.filename}}</span></td>
+            <td class="handle"><span class="noselection text">{% if upload.size %}{{upload.size|filesizeformat}}{% endif %}</span></td>
+            <td class="handle" style="text-align: right;"><span class="noselection text">{{upload.page_count}}</span></td>
             <td><input type="text" class="pageranges" name="pages_{{ upload.id }}" id="pages_{{ upload.id }}" value="{{ request.form.get('pages_%d' % upload.id, '') }}"/>
             <script type="text/javascript">$(function() {$("#pages_{{ upload.id }}").rules("add", {maxpages: {{upload.page_count}} })});</script>
             </td>

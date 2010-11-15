@@ -80,6 +80,7 @@
         }
         $("#files").sortable({
             stop: function(event, ui) { cycle_mark_uploads() },
+            handle: '.handle'
         });
         update_files_table();
         $(".noselection").disableSelection();
