@@ -4,6 +4,7 @@ from operator import attrgetter
 
 from flask import g, request, Response, session, render_template
 from flask import abort, redirect, url_for, jsonify
+from flaskext.babel import gettext
 from werkzeug import wrap_file
 from werkzeug.exceptions import InternalServerError, MethodNotAllowed, Gone, \
                                 NotFound
@@ -78,6 +79,7 @@ def _order_files(files):
 @templated('main.html')
 def main():
     files = _get_uploads()
+    session['has_cookies'] = 1
     return {'uploads': files}
 
 def main_table():
@@ -104,6 +106,12 @@ def handle_form():
         raise MethodNotAllowed()
 
 def upload_file():
+    if not session.get('has_cookies', 0) == 1:
+        return Response('<html><body><span id="cookies">'
+                        + gettext('Please activate cookies '
+                                  'so your uploads can be linked to you.')
+                        + '</span></body></html>')
+
     if 'file' in request.files and request.files['file']:
         app.logger.info("Upload form is valid")
         upload = Upload()
@@ -123,10 +131,7 @@ def upload_file():
     else:
         app.logger.error("No file specified")
 
-    if request.is_xhr:
-        return ''
-    else:
-        return redirect(url_for('main'))
+    return redirect(url_for('main'))
 
 #@templated('confirm_delete.html')
 #def confirm_delete():

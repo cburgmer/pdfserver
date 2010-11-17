@@ -62,6 +62,9 @@
                         $.jnotify('{{ _("Error updating file list: ") }}' + st, "error", true);
                     },
                 });
+            } else if (window.frames["upload_target"].document.getElementById('cookies')) {
+                $("#upload-progress").css('visibility', 'hidden');
+                $.jnotify('{{ _("Please activate cookies so your uploads can be linked to you.") }}', "error", true);
             } else {
                 $("#upload-progress").css('visibility', 'hidden');
                 $.jnotify('{{ _("Unable to upload file ") }}', "error", true);
