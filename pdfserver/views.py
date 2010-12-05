@@ -107,6 +107,7 @@ def handle_form():
 
 def upload_file():
     if not session.get('has_cookies', 0) == 1:
+        app.logger.debug("No cookie found")
         return Response('<html><body><span id="cookies">'
                         + gettext('Please activate cookies '
                                   'so your uploads can be linked to you.')
