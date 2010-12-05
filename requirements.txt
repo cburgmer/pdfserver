@@ -6,9 +6,9 @@ Flask-Babel
 # Database models (not for App Engine)
 SQLAlchemy
 
-# We need bleeding edge pyPdf for the "n pages on one" feature
+# We needed pyPdf>=1.13 for the "n pages on one" feature
 # (optionally, 1.12 will work basically)
--e git+git://github.com/mfenniak/pyPdf#egg=pyPdf>1.12
+pyPdf>=1.13
 
 # Watermarking (optional)
 reportlab
