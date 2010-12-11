@@ -53,10 +53,14 @@ class PdfserverTestCase(unittest.TestCase):
         Upload.commit()
 
     def setUp(self):
-        pdfserver.app.config['DATABASE'] = 'sqlite://'
-        pdfserver.app.config['SECRET_KEY'] = 'test key'
-        pdfserver.app.config['UPLOAD_TO'] = '/tmp'
-        #pdfserver.app.config['DEBUG'] = True
+        env = 'PDFSERVER_TEST_SETTINGS'
+        if env in os.environ and os.environ[env].strip():
+            pdfserver.app.config.from_envvar(env)
+        else:
+            pdfserver.app.config['DATABASE'] = 'sqlite://'
+            pdfserver.app.config['SECRET_KEY'] = 'test key'
+            pdfserver.app.config['UPLOAD_TO'] = '/tmp'
+            #pdfserver.app.config['DEBUG'] = True
 
         self.app = pdfserver.app.test_client()
         from pdfserver import models, faketask, database
