@@ -5,6 +5,8 @@ from pdfserver import app
 task = __import__(app.config['TASK_HANDLER'], fromlist='task').task
 Upload = __import__(app.config['MODELS'], fromlist='Upload').Upload
 
+app.logger.debug("Using task handler %r" % app.config['TASK_HANDLER'])
+
 if app.config['TASK_HANDLER'] == 'celery.decorators':
     from celery.exceptions import NotRegistered
 

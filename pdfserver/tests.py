@@ -57,7 +57,6 @@ class PdfserverTestCase(unittest.TestCase):
         pdfserver.app.config['SECRET_KEY'] = 'test key'
         pdfserver.app.config['UPLOAD_TO'] = '/tmp'
         #pdfserver.app.config['DEBUG'] = True
-        pdfserver.app.config['TASK_HANDLER'] = 'pdfserver.faketask'
 
         self.app = pdfserver.app.test_client()
         from pdfserver import models, faketask, database

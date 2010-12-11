@@ -113,7 +113,8 @@ General
 Celery
 ------
 For optional, asynchronous generation of the resulting PDF install celery and
-(as default broker) RabbitMQ.
+(as default broker) RabbitMQ (see 
+http://celeryq.org/docs/getting-started/broker-installation.html).
 
 Run celeryd from the project's directory to handle tasks asynchronously::
 
