@@ -3,6 +3,7 @@ import os
 import re
 import difflib
 import random
+import time
 from StringIO import StringIO
 
 import werkzeug
@@ -53,6 +54,7 @@ class PdfserverTestCase(unittest.TestCase):
         Upload.commit()
 
     def setUp(self):
+        pdfserver.app.config['BROKER_TIMEOUT'] = 20
         env = 'PDFSERVER_TEST_SETTINGS'
         if env in os.environ and os.environ[env].strip():
             pdfserver.app.config.from_envvar(env)
@@ -359,22 +361,40 @@ class DownloadMixin(object):
         TaskResult.query.delete()
         TaskResult.commit()
 
-    def combine_and_download(self, **data):
+
+    def _combine(self, **data):
         options = {'form_action': 'combine'}
         options.update(data)
         # Start build
         rv = self.app.post('/handleform',
-                           data=options,
-                           follow_redirects=True)
+                           data=options)
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.status_code, 302)
 
-        # Fetch download link
-        match = re.search('"(/download/[^/"]+)"', rv.data)
-        self.assert_(match is not None)
+        match = re.match(r'http://[^/]+/resultpage/([^/]+)$', rv.location)
+        task_id = match.group(1)
+
+        match = None
+        total_sleep = 0
+        while (match is None
+               and total_sleep < pdfserver.app.config['BROKER_TIMEOUT']):
+            rv = self.app.get('/resultpage/%s' % task_id)
+            self.assertEquals(rv.status_code, 200)
+
+            # Fetch download link
+            match = re.search('"(/download/[^/"]+)"', rv.data)
+            time.sleep(1)
+            total_sleep += 1
+
+        self.assert_(match is not None, "Did not get download in time (%d seconds)" % 20)
+        url = match.group(1)
+        return url, task_id
+
+    def combine_and_download(self, **data):
+        url, _ = self._combine(**data)
 
         # Download
-        rv = self.app.get(match.group(1))
+        rv = self.app.get(url)
         self.assertEquals(rv.status_code, 200)
 
         return rv
@@ -423,16 +443,7 @@ class DownloadTestCase(DownloadMixin, PdfserverTestCase):
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Start build
-        rv = self.app.post('/handleform', data={'form_action': 'combine'},
-                           follow_redirects=True)
-
-        self.assertEquals(rv.status_code, 200)
-
-        # Fetch download link
-        match = re.search('"(/download/([^/"]+))"', rv.data)
-        self.assert_(match is not None)
-        download_url = match.group(1)
-        id = match.group(2)
+        download_url, id = self._combine()
 
         # Remove download
         rv = self.app.post('/removedownload',
@@ -457,16 +468,7 @@ class DownloadTestCase(DownloadMixin, PdfserverTestCase):
                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
         # Start build
-        rv = self.app.post('/handleform', data={'form_action': 'combine'},
-                           follow_redirects=True)
-
-        self.assertEquals(rv.status_code, 200)
-
-        # Fetch download link
-        match = re.search('"(/download/([^/"]+))"', rv.data)
-        self.assert_(match is not None)
-        download_url = match.group(1)
-        id = match.group(2)
+        download_url, id = self._combine()
 
         task_result = TaskResult.get_for_task_id(id)
         task_result.available = False
@@ -578,7 +580,11 @@ class CombineTestCase(DownloadMixin, PdfserverTestCase):
         # Test order
         self.assert_(all(
                     (('Test %d' % idx) in pdf_download.getPage(i).extractText())
-                    for i, idx in enumerate(order)))
+                    for i, idx in enumerate(order)),
+                    "Wrote order %r got %r"
+                    % (order,
+                       '\n'.join(pdf_download.getPage(i).extractText()
+                                 for i in range(len(order)))))
 
         self.assertEquals(pdf_download.getNumPages(), len(order))
 
