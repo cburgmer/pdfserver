@@ -357,9 +357,10 @@ class DownloadMixin(object):
     def clean_up(self):
         super(DownloadMixin, self).clean_up()
 
-        from pdfserver.faketask import TaskResult
-        TaskResult.query.delete()
-        TaskResult.commit()
+        if pdfserver.app.config['TASK_HANDLER'] == 'pdfserver.faketask':
+            from pdfserver.faketask import TaskResult
+            TaskResult.query.delete()
+            TaskResult.commit()
 
 
     def _combine(self, **data):
@@ -423,8 +424,10 @@ class DownloadTestCase(DownloadMixin, PdfserverTestCase):
     def test_download_non_existant_fails(self):
         from pdfserver.models import Upload
         assert Upload.query.count() == 0
-        from pdfserver.faketask import TaskResult
-        assert TaskResult.query.count() == 0
+
+        if pdfserver.app.config['TASK_HANDLER'] == 'pdfserver.faketask':
+            from pdfserver.faketask import TaskResult
+            assert TaskResult.query.count() == 0
 
         rv = self.app.get('/')
         self.assertEquals(rv.status_code, 200)
@@ -458,27 +461,28 @@ class DownloadTestCase(DownloadMixin, PdfserverTestCase):
         self.clean_up()
 
     def test_download_expired_fails(self):
-        from pdfserver.faketask import TaskResult
-        assert TaskResult.query.count() == 0
+        if pdfserver.app.config['TASK_HANDLER'] == 'pdfserver.faketask':
+            from pdfserver.faketask import TaskResult
+            assert TaskResult.query.count() == 0
 
-        rv = self.app.get('/')
-        self.assertEquals(rv.status_code, 200)
+            rv = self.app.get('/')
+            self.assertEquals(rv.status_code, 200)
 
-        rv = self.app.post('/handleform',
-                           data={'file': (self.get_pdf_stream(), 'test.pdf')})
+            rv = self.app.post('/handleform',
+                            data={'file': (self.get_pdf_stream(), 'test.pdf')})
 
-        # Start build
-        download_url, id = self._combine()
+            # Start build
+            download_url, id = self._combine()
 
-        task_result = TaskResult.get_for_task_id(id)
-        task_result.available = False
-        TaskResult.add(task_result)
+            task_result = TaskResult.get_for_task_id(id)
+            task_result.available = False
+            TaskResult.add(task_result)
 
-        # Download
-        rv = self.app.get(download_url)
-        self.assertEquals(rv.status_code, 410)
+            # Download
+            rv = self.app.get(download_url)
+            self.assertEquals(rv.status_code, 410)
 
-        self.clean_up()
+            self.clean_up()
 
 
 class CombineTestCase(DownloadMixin, PdfserverTestCase):
