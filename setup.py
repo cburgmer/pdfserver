@@ -36,6 +36,7 @@ setup(
     author_email = "cburgmer@ira.uka.de",
     description = 'Pdfserver is a webservice that offers common PDF operations like joining documents, selecting pages or "n pages on one".',
     long_description=open('README.rst').read(),
+    license = "BSD License",
     url = "http://pdfserverapp.appspot.com/",
     package_data = {'pdfserver': ['templates/*.html', 'translations/*/*/*.mo',
                                   'translations/*/*/*.po', 'static/css/*.css',
