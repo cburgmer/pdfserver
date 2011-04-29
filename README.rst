@@ -57,6 +57,13 @@ Features
 
 Changes
 =======
+0.5
+
+* Fix setup.py statics
+* Show warning if cookies not enabled
+* Update pyPdf dependency
+* Enable testing for celery task backend
+
 0.4
 
 * Handle upload and remove actions through Ajax
