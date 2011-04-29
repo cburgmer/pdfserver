@@ -29,13 +29,11 @@ Unittests
 =========
 For pdfserver unittests run::
 
-    $ python pdfserver/tests.py
+    $ python setup.py test
 
-To show coverage rendered as HTML run::
+To show coverage rendered as HTML install nose and coverage and run::
 
     $ nosetests pdfserver --with-coverage --cover-package pdfserver \
       --cover-html --cover-html-dir coverage
 
 Then point your browser to ./coverage/index.html.
-
-You need to install nose and coverage for the last step.

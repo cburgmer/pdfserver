@@ -4,3 +4,4 @@
 * GAE: DeadlineExceededError on building the pdf does not allow to 
   save the error to the database, need another way to inform client
   that the request died
+* Test fails if pre-existing database is used (not in-memory)

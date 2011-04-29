@@ -46,6 +46,7 @@ setup(
     extras_require = {
         'async': ['celery'],
     },
+    test_suite = "pdfserver.tests",
     classifiers = [
     	"Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
