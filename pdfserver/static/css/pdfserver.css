@@ -1,10 +1,12 @@
+#content { padding: 8px; }
+h1 { margin-top: 0; }
 #filetable { width: 80%; border-spacing: 0; }
 #files tr.odd { height: 50px; width: 100%; background-color:#e9e9f9; cursor: default; }
 #files tr.even { height: 50px; width: 100%; background-color:#eef; cursor: default; }
 #files * .text { font-size: 1.2em; }
 #filetable * th { border: 1px; border-style: none none solid none; }
 #filetable * td { padding: 2px; }
-.footer { margin-top: 40px; color: #888; }
+.footer { color: #888; line-height: 40px }
 .footer a { font-weight:bold; color:#888; text-decoration:none; }
 .footer a:visited { color:#666; }
 .footer a:hover { text-decoration:underline; }
@@ -17,3 +19,8 @@
 #moreoptions td span { display: inline-block; height: 100%; vertical-align: top; margin: 3px; margin-right: 10px; }
 #nouploads { background-color: #fff; }
 #nouploads td { padding: 1em; font-style: italic; }
+
+html, body, #container { height: 100%; margin: 0; padding: 0; }
+body > #container { height: auto; min-height: 100%; }
+#content { padding-bottom: 40px; }
+#footer { clear: both; position: relative; z-index: 10; padding: 0 5px 0 5px; height: 40px; margin-top: -40px; }
