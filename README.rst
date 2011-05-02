@@ -147,7 +147,7 @@ dependencies locally. Run the following in the extracted folder::
     $ pip install -r requirements.txt distribute --build=tmp --src=tmp \
       --no-install --ignore-installed
     $ mv tmp/Babel/babel/ tmp/Flask/flask/ tmp/Flask-Babel/flaskext/ \
-      tmp/Jinja2/jinja2/ tmp/pypdf/pyPdf/ tmp/pytz/pytz \
+      tmp/Jinja2/jinja2/ tmp/pyPdf/pyPdf/ tmp/pytz/pytz \
       tmp/speaklater/speaklater.py tmp/Werkzeug/werkzeug/ \
       tmp/reportlab/src/reportlab/ tmp/distribute/pkg_resources.py .
     $ rm -rf tmp
