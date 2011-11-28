@@ -145,9 +145,11 @@ class UploadTestCase(PdfserverTestCase):
                         data={'file': (self.get_pdf_stream(), 'test3.pdf')},
                         follow_redirects=True)
 
+            with c.session_transaction() as session:
+                session_file_ids = session['file_ids']
             # Get file ids
             ids = self.extract_ids_from_main_page(rv.data)
-            self.assertEquals(sorted(ids), sorted(session['file_ids']))
+            self.assertEquals(sorted(ids), sorted(session_file_ids))
 
             self.assertEquals(Upload.query.filter(Upload.id.in_(ids)).count(),
                               3)
