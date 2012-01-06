@@ -127,7 +127,9 @@ Celery
 ------
 For optional, asynchronous generation of the resulting PDF install celery and
 kombu-sqlalchemy (you may also use default broker RabbitMQ, see 
-http://celeryq.org/docs/getting-started/broker-installation.html).
+http://celeryq.org/docs/getting-started/broker-installation.html)::
+
+    $ pip install -r celery_requirements.txt
 
 Run celeryd from the project's directory to handle tasks asynchronously::
 

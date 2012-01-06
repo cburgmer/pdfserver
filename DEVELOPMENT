@@ -29,6 +29,12 @@ For pdfserver unittests run::
 
     $ python setup.py test
 
+The default configuration is set in such a way that celery is picked up by
+default if the Python module is installed. To test against celery
+integration, celeryd needs to be started in the background. Make sure both
+get the exact same test settings. Also sqlite in-memory databases cannot be
+shared between the webserver and the task handler.
+
 To show coverage rendered as HTML install nose and coverage and run::
 
     $ nosetests pdfserver --with-coverage --cover-package pdfserver \

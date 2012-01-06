@@ -55,10 +55,9 @@ class PdfserverTestCase(unittest.TestCase):
 
     def setUp(self):
         pdfserver.app.config['BROKER_TIMEOUT'] = 20
-        env = 'PDFSERVER_TEST_SETTINGS'
-        if env in os.environ and os.environ[env].strip():
-            pdfserver.app.config.from_envvar(env)
-        else:
+        # Own test settings if nothing else applied
+        env = 'PDFSERVER_SETTINGS'
+        if env not in os.environ or not os.environ[env].strip():
             pdfserver.app.config['DATABASE'] = 'sqlite://'
             pdfserver.app.config['SECRET_KEY'] = 'test key'
             pdfserver.app.config['UPLOAD_TO'] = '/tmp'

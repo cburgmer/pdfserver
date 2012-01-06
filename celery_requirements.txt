@@ -1,0 +1,4 @@
+celery
+
+# For the Kombu database broker
+kombu-sqlalchemy
