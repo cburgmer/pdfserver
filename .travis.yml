@@ -7,6 +7,6 @@ install:
   - sudo pip install -r requirements.txt
   - sudo pip install -r celery_requirements.txt
 before_script:
-  - PDFSERVER_SETTINGS=../test_settings_celery.py celery &
+  - PDFSERVER_SETTINGS=../test_settings_celery.py celeryd &
 script:
   - python setup.py test
