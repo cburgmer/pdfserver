@@ -57,6 +57,11 @@ Features
 
 Changes
 =======
+0.X
+
+* Use SQLAlchemy broker backend for celery by default
+* Fix breakage due to incompatible Flask change
+
 0.5
 
 * Fix setup.py statics

@@ -15,6 +15,13 @@ app.config.from_object('pdfserver.settings')
 app.config.from_envvar('PDFSERVER_SETTINGS', silent=True)
 babel = Babel(app)
 
+# Ugly workaround for flask not allowing us to register this later
+dbhook = None
+@app.teardown_request
+def shutdown_session(exception=None):
+    if dbhook:
+        dbhook()
+
 url('/', 'views.main')
 url('/main_table', 'views.main_table', methods=['POST'])
 url('/handleform', 'views.handle_form', methods=['POST'])
