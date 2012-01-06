@@ -576,9 +576,8 @@ class CombineTestCase(DownloadMixin, PdfserverTestCase):
             random.shuffle(order)
 
             file_ids = session['file_ids']
-            options = werkzeug.MultiDict([('file[]', i) for i in order]
-                                        + [('upload_id_%d' % j, id)
-                                            for j, id in enumerate(file_ids)])
+            options = werkzeug.MultiDict([('file[]', file_ids[i-1])
+                                          for i in order])
             rv = self.combine_and_download(**options)
 
         pdf_download = PdfFileReader(StringIO(rv.data))

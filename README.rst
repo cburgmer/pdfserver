@@ -61,6 +61,7 @@ Changes
 
 * Use SQLAlchemy broker backend for celery by default
 * Fix breakage due to incompatible Flask change
+* Fix test for ordering of uploaded files
 
 0.5
 
