@@ -30,7 +30,7 @@ def parse_dependency_links(file_name):
 
 setup(
     name = "pdfserver",
-    version = "0.5",
+    version = "0.6",
     packages = ['pdfserver'],
     author = "Christoph Burgmer",
     author_email = "cburgmer@ira.uka.de",
